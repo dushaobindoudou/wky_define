@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html dir="ltr">
+    <head>
+        <meta charset="utf-8">
+        <title>音乐播放 </title>
+        <link rel="stylesheet" type="text/css" href="css/reset.css">
+        </link>
+        <style type="text/css">
+            /* 大于1200 */
+            .music-main {
+                width: 1200px;
+                height: 760px;
+                margin: 0 auto;
+            }
+            
+            .music-title {
+            }
+        </style>
+        <script type="text/javascript" src="script/define.js"></script>
+        <script type="text/javascript" src="script/music_player.js"></script>
+    </head>
+    <body>
+        <div class="music-main">
+            <div class="music-title">
+                <ul>
+                    <li>color music</li>
+                    <li>关于</li>
+                    <li></li>
+                    <li></li>
+                </ul>
+            </div>
+            <div class="music-content">
+                <div class="music-detail">
+                </div>
+                <div class="music-category">
+                </div>
+            </div>
+            <div class="music-player">
+                <div id="player">
+                </div>
+                <div class="player-ui" style="width:200px;">
+                    <div id="loaded-bar" style="background:green; opacity:0.7;">
+                    </div>
+					<input id="music-play" type="button" value="播放">
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            
+            var dom = wky.dom;
+            
+            var py = document.getElementById("player");
+            var mp = document.getElementById("music-play");
+            var lb = document.getElementById("loaded-bar");
+            
+            var Player = wky.plugins.Player;
+            var ply = new Player({
+                ele: py,
+                preload: "auto",
+                loadProgress: function(evt, loaded, dur, pen){
+                    dom.setStyle(lb, {
+                        width: parseInt(pen) * 100 + "%"
+                    });
+					lb.innerHTML = parseInt(pen) * 100 + "%";
+                    console.log(loaded + ":" + dur);
+                }
+            });
+            
+            mp.onclick = function(){
+				ply.setAudio({
+					mp3: "http://zhifeiji.aliapp.com/music/yin-tian.mp3?2wwe3"
+				});
+				ply.volume(0.8);
+				ply.pause(NaN);
+                ply.play(0);
+            }
+        </script>
+    </body>
+</html>

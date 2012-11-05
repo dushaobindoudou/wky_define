@@ -407,7 +407,9 @@ wky_define("wky.plugins", function(plugin){
         };
         this.player = null;
         this.playerIsLoaded = false;
-        this.status = {};
+        this.status = {
+			format:{}
+		};
         this.playerId = getPlayerId();
         this.init();
     };
@@ -437,7 +439,7 @@ wky_define("wky.plugins", function(plugin){
                         var pencent = loaded / dura;
                         args.push(loaded);
                         args.push(dura);
-                        console.log(dura || that.player.mozFragmentEnd);
+                        //console.log(dura || that.player.mozFragmentEnd);
                         args.push(pencent);
                         that.loadProgress.apply(that, args);
                     })
@@ -448,33 +450,47 @@ wky_define("wky.plugins", function(plugin){
                 
             }
         },
+		updatePlayerStatus:function(src,format){
+			if(!src || !format){
+				
+				return;
+			}
+			var self = this;
+			self.status.src = src;
+			self.status.format[format] = true;
+			self.status.formatType = format;
+		},
         setAudio: function(media){
             var self = this;
             try {
-                // Always finds a format due to checks in setMedia()
+                //todo:每次只能添加一个 如果多了话就会覆盖前一个 呵呵,回头改写一下
                 core.forEach(support, function(format, i){
                     if (media[format]) {
                         switch (format) {
                             case "m4a":
                             case "fla":
                                 self.player.fl_setAudio_m4a(media[format]);
+								self.updatePlayerStatus(media[format],format);
                                 break;
                             case "mp3":
                                 self.player.fl_setAudio_mp3(media[format]);
+								self.updatePlayerStatus(media[format],format);
                                 break;
                             case "rtmpa":
                                 self.player.fl_setAudio_rtmp(media[format]);
+								self.updatePlayerStatus(media[format],format);
                                 break;
                         }
+						//self.status.src = media[format];
+						//self.status.format[format] = true;
+						//self.status.formatType = format;
                     }
-                    self.status.src = media[format];
-                    self.status.format[format] = true;
-                    self.status.formatType = format;
                 });
                 if (self.preload === 'auto') {
                     self.load();
                     self.status.waitForLoad = false;
                 }
+				return false;
             } 
             catch (err) {
                 self.flashError(err);
@@ -490,14 +506,16 @@ wky_define("wky.plugins", function(plugin){
                             case "m4v":
                             case "flv":
                                 self.player.fl_setVideo_m4v(media[format]);
+								self.updatePlayerStatus(media[format],format);
                                 break;
                             case "rtmpv":
                                 self.player.fl_setVideo_rtmp(media[format]);
-                                break;
+                                self.updatePlayerStatus(media[format],format);
+								break;
                         }
-                        self.status.src = media[format];
-                        self.status.format[format] = true;
-                        self.status.formatType = format;
+                        //self.status.src = media[format];
+                        //self.status.format[format] = true;
+                        //self.status.formatType = format;
                         return false;
                     }
                 });

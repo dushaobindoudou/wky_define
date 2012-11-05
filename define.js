@@ -566,6 +566,8 @@ wky_define("wky.dom", function(dom){
      *  - JSSpec BDD framework
      *
      * Kudos to every single one of them for supporting the open web.
+	 * 
+	 * 暂时用一下 thanks kudos
      */
     var Sly = (function(){
     

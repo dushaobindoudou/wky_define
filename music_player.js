@@ -366,7 +366,7 @@ wky_define("wky.plugins", function(plugin){
         var id = 0;
         return function(){
             id++;
-            return "_player_" + id;
+            return "#player_" + id;
         }
     }()
     
@@ -375,7 +375,9 @@ wky_define("wky.plugins", function(plugin){
             return;
         }
         var flashPlayer = flashembed(id, {
-            src: "flash/Jplayer.swf"
+            src: "flash/Jplayer.swf",
+            jQuery: "wky.plugins.playerCollection.get",
+            id: id.split("#")[1]
         });
         return flashPlayer;
     }
@@ -408,8 +410,8 @@ wky_define("wky.plugins", function(plugin){
         this.player = null;
         this.playerIsLoaded = false;
         this.status = {
-			format:{}
-		};
+            format: {}
+        };
         this.playerId = getPlayerId();
         this.init();
     };
@@ -450,16 +452,19 @@ wky_define("wky.plugins", function(plugin){
                 
             }
         },
-		updatePlayerStatus:function(src,format){
-			if(!src || !format){
-				
-				return;
-			}
-			var self = this;
-			self.status.src = src;
-			self.status.format[format] = true;
-			self.status.formatType = format;
-		},
+        jPlayerFlashEvent: function(){
+            console.log("event");
+        },
+        updatePlayerStatus: function(src, format){
+            if (!src || !format) {
+            
+                return;
+            }
+            var self = this;
+            self.status.src = src;
+            self.status.format[format] = true;
+            self.status.formatType = format;
+        },
         setAudio: function(media){
             var self = this;
             try {
@@ -470,27 +475,27 @@ wky_define("wky.plugins", function(plugin){
                             case "m4a":
                             case "fla":
                                 self.player.fl_setAudio_m4a(media[format]);
-								self.updatePlayerStatus(media[format],format);
+                                self.updatePlayerStatus(media[format], format);
                                 break;
                             case "mp3":
                                 self.player.fl_setAudio_mp3(media[format]);
-								self.updatePlayerStatus(media[format],format);
+                                self.updatePlayerStatus(media[format], format);
                                 break;
                             case "rtmpa":
                                 self.player.fl_setAudio_rtmp(media[format]);
-								self.updatePlayerStatus(media[format],format);
+                                self.updatePlayerStatus(media[format], format);
                                 break;
                         }
-						//self.status.src = media[format];
-						//self.status.format[format] = true;
-						//self.status.formatType = format;
+                        //self.status.src = media[format];
+                        //self.status.format[format] = true;
+                        //self.status.formatType = format;
                     }
                 });
                 if (self.preload === 'auto') {
                     self.load();
                     self.status.waitForLoad = false;
                 }
-				return false;
+                return false;
             } 
             catch (err) {
                 self.flashError(err);
@@ -506,12 +511,12 @@ wky_define("wky.plugins", function(plugin){
                             case "m4v":
                             case "flv":
                                 self.player.fl_setVideo_m4v(media[format]);
-								self.updatePlayerStatus(media[format],format);
+                                self.updatePlayerStatus(media[format], format);
                                 break;
                             case "rtmpv":
                                 self.player.fl_setVideo_rtmp(media[format]);
-                                self.updatePlayerStatus(media[format],format);
-								break;
+                                self.updatePlayerStatus(media[format], format);
+                                break;
                         }
                         //self.status.src = media[format];
                         //self.status.format[format] = true;
@@ -604,7 +609,7 @@ wky_define("wky.plugins", function(plugin){
             }
         },
         flashError: function(error){
-			//把错误send 回日志服务器 
+            //把错误send 回日志服务器 
             console.log(error.msg);
         }
     }
@@ -642,10 +647,25 @@ wky_define("wky.plugins", function(plugin){
         
         }
     }
+	
+	
+	
+    var playerCollection = {
+        get: function(id){
+            
+			return;
+        },
+		add:function(){
+			
+		}
+    }
     
-    return {
+    return [{
         varName: "Player",
         varVal: Player
-    }
+    }, {
+        varName: "playerCollection",
+        varVal: playerCollection
+    }]
 })
 

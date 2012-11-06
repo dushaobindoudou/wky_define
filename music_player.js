@@ -374,6 +374,7 @@ wky_define("wky.plugins", function(plugin){
         if (!id) {
             return;
         }
+		//flash 调用 jquery("#  id ").jplayer 这个对象下面的的flashevent，所有要把这个对象拼成这样一个方法，来取出这样一个对象
         var flashPlayer = flashembed(id, {
             src: "flash/Jplayer.swf",
             jQuery: "wky.plugins.playerCollection.get",

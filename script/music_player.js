@@ -370,11 +370,11 @@ wky_define("wky.plugins", function(plugin){
         }
     }()
     
-    var createFlashPlayer = function(id, preload){
+    var createFlashPlayer = function(ele,id, preload){
         if (!id) {
             return;
         }
-        var flashPlayer = flashembed(id, {
+        var flashPlayer = flashembed(ele, {
             src: "flash/Jplayer.swf",
             jQuery: "wky.plugins.playerCollection.get",
             id: id.split("#")[1]
@@ -412,6 +412,11 @@ wky_define("wky.plugins", function(plugin){
         this.status = {
             format: {}
         };
+		this.jplayer={
+			jPlayerFlashEvent:function(){
+				console.log("set is called!");
+			}
+		};
         this.playerId = getPlayerId();
         this.init();
     };
@@ -420,7 +425,7 @@ wky_define("wky.plugins", function(plugin){
         constructor: Player,
         init: function(){
             //create player
-            var flashObj = createFlashPlayer(this.element);
+            var flashObj = createFlashPlayer(this.element,this.playerId);
             if (flashObj) {
                 this.player = flashObj.getApi();
             }
@@ -648,15 +653,33 @@ wky_define("wky.plugins", function(plugin){
         }
     }
 	
+	var playerIn = function(colls,id){
+		if(!colls || !id){
+			return;
+		}
+		if(id in colls){
+			return true;
+		}
+		return false;
+	}
 	
 	
     var playerCollection = {
+		colls:{},
         get: function(id){
-            
-			return;
+            if(!id){
+				return;
+			}
+			if(playerId(this.colls,this.id)){
+				return this.colls[this.id];
+			}
         },
-		add:function(){
-			
+		add:function(opt){
+			var player = new Player(opt);
+			if(player.id){
+				this.colls[player.id] = player;
+			}
+			return player;
 		}
     }
     

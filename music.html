@@ -53,8 +53,9 @@
             var mp = document.getElementById("music-play");
             var lb = document.getElementById("loaded-bar");
 
-            var Player = wky.plugins.Player;
-            var ply = new Player({
+            var playerColl = wky.plugins.playerCollection;
+            
+			var ply = playerColl.add({
                 ele: py,
                 preload: "auto",
                 loadProgress: function(evt, loaded, dur, pen){
@@ -65,6 +66,7 @@
                     console.log(loaded + ":" + dur);
                 }
             });
+			//= new Player();
             
             mp.onclick = function(){
 				ply.setAudio({

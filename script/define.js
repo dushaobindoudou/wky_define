@@ -229,6 +229,37 @@ wky_define("wky.core", function(core){
         return Object.prototype.toString.call(obj) === "[object String]";
     }
     
+    var isUndefined = function(obj){
+        return obj === void 0;
+        //return Object.prototype.toString.call(obj) === "[object Undefined]";
+    }
+    
+    var isNumber = function(obj){
+        return Object.prototype.toString.call(obj) === "[object Number]";
+    }
+    
+    var isNumberStr = function(obj){
+        if (isString(obj)) {
+            //todo:包含e，
+            return !!obj.match(/^[0-9]*(\.)?\d+$/);
+        }
+        return false;
+    }
+    
+    var isFunction = function(){
+        return Object.prototype.toString.call(obj) === "[object Function]";
+    }
+    
+    //判断是否是一个dom节点
+    var isNode = function(o){
+        return (typeof Node === "object" ? o instanceof Node : o && typeof o === "object" && typeof o.nodeType === "number" && typeof o.nodeName === "string");
+    }
+    
+    //Returns true if it is a DOM element    
+    var isElement = function(o){
+        return (typeof HTMLElement === "object" ? o instanceof HTMLElement : o && typeof o === "object" && o.nodeType === 1 && typeof o.nodeName === "string");
+    }
+    
     var createClass = function(proto, parent){
         var fn = function(){
             var args = [].slice.call(arguments);
@@ -246,17 +277,19 @@ wky_define("wky.core", function(core){
         if (!isArray(a)) {
             return;
         }
-        fun = fun ||function(){};
-		var args = [].slice.call(arguments,1);
+        fun = fun ||
+        function(){
+        };
+        var args = [].slice.call(arguments, 1);
         if (Array.prototype.forEach) {
             Array.prototype.forEach.apply(a, args);
         }
         else {
-            var len = this.length >>> 0;
+            var len = a.length >>> 0;
             if (typeof fun != "function") {
                 throw new TypeError();
             }
-            var thisp = arguments[1];
+            var thisp = arguments[0];
             for (var i = 0; i < len; i++) {
                 if (i in thisp) {
                     fun.call(thisp, thisp[i], i, thisp);
@@ -264,6 +297,19 @@ wky_define("wky.core", function(core){
             }
         }
     }
+    
+    var each = function(ary, fn, context){
+        if (!isArray(ary) || !isFunction(fn)) {
+            return;
+        }
+        context = context || window;
+        for (var i = 0, len = ary.length; i < len; i++) {
+            if (fn.call(context, i, ary[i], ary) === false) {
+                return;
+            }
+        }
+    }
+    
     
     var forIn = function(obj, fun){
         if (!obj || !fun) {
@@ -274,7 +320,19 @@ wky_define("wky.core", function(core){
                 fun.call(obj, k, obj[k], obj);
             }
         }
-        
+    }
+    
+    //设置指定的 作用域
+    var bind = function(fn, context){
+        if (!isFunction(fn)) {
+            return fn;
+        }
+        context = context || window;
+        var args = [].slice.call(arguments, 2);
+        return function(){
+            var arg = args.concat([].slice.call(arguments));
+            return fn.apply(context, arg);
+        }
     }
     
     return [{
@@ -287,11 +345,35 @@ wky_define("wky.core", function(core){
         varName: "isArray",
         varVal: isArray
     }, {
+        varName: "isNumber",
+        varVal: isNumber
+    }, {
+        varName: "isUndefined",
+        varVal: isUndefined
+    }, {
+        varName: "isNumberStr",
+        varVal: isNumberStr
+    }, {
+        varName: "isFunction",
+        varVal: isFunction
+    }, {
+        varName: "isNode",
+        varVal: isNode
+    }, {
+        varName: "isElement",
+        varVal: isElement
+    }, {
         varName: "forEach",
         varVal: forEach
     }, {
+        varName: "each",
+        varVal: each
+    }, {
         varName: "forIn",
         varVal: forIn
+    }, {
+        varName: "bind",
+        varVal: bind
     }]
 });
 
@@ -300,7 +382,26 @@ wky_define("wky.core", function(core){
 wky_define("wky.dom", function(){
     var str = wky.string;
     var core = wky.core;
-    
+    /*
+     *  ATTRIBUTE_NODE 	2
+     CDATA_SECTION_NODE	 4
+     COMMENT_NODE	8
+     DOCUMENT_FRAGMENT_NODE	 11
+     DOCUMENT_NODE	9
+     DOCUMENT_POSITION_CONTAINED_BY	16
+     DOCUMENT_POSITION_CONTAINS	8
+     DOCUMENT_POSITION_DISCONNECTED	1
+     DOCUMENT_POSITION_FOLLOWING	4
+     DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC	32
+     DOCUMENT_POSITION_PRECEDING	2
+     DOCUMENT_TYPE_NODE	10
+     ELEMENT_NODE	1
+     ENTITY_NODE	6
+     ENTITY_REFERENCE_NODE	5
+     NOTATION_NODE	12
+     PROCESSING_INSTRUCTION_NODE	7
+     TEXT_NODE	3
+     */
     var DIRECT_ATTRIBUTE_MAP_ = {
         tabindex: "tabIndex",
         readonly: "readOnly",
@@ -410,6 +511,7 @@ wky_define("wky.dom", function(){
         varName: "setStyle",
         varVal: setStyle
     }]
+    
 });
 
 //取得或者设置光标位置
@@ -440,44 +542,204 @@ wky_define("wky.dom", function(ele){
 
 //window size
 wky_define("wky.dom", function(){
-    var getWinSize = function(){
+
+    /**
+     * 包括滚动条 border padding
+     * @method winSize
+     */
+    var winSize = function(win){
         var winH = 0, winW = 0;
+        var doc = win ? win.document : document;
         //ie 向后兼容
-        if (document.body && document.body.offsetWidth) {
+        if (doc.body && doc.body.offsetWidth) {
             winW = document.body.offsetWidth;
             winH = document.body.offsetHeight;
         }
         //ie 标准模式
-        if (document.compatMode == 'CSS1Compat' && document.documentElement && document.documentElement.offsetWidth) {
-            winW = document.documentElement.offsetWidth;
-            winH = document.documentElement.offsetHeight;
+        if (doc.compatMode == 'CSS1Compat' && doc.documentElement && doc.documentElement.offsetWidth) {
+            winW = doc.documentElement.offsetWidth;
+            winH = doc.documentElement.offsetHeight;
         }
         //标准浏览器
         if (window.innerWidth && window.innerHeight) {
             winW = window.innerWidth;
             winH = window.innerHeight;
         }
-        return [winW, winH]
+        return {
+            "width": winW,
+            "height": winH
+        }
+    }
+    
+    /**
+     * 不包括滚动条 innerSize
+     * @method screenSize
+     */
+    var screenSize = function(win){
+        var doc = win ? win.document : document, de = doc.documentElement, db = doc.body;
+        return {
+            height: de.clientHeight || $.win.innerHeight || db.clientHeight,
+            width: de.clientWidth || $.win.innerWidth || db.clientWidth
+        };
+    };
+    
+    return [{
+        varName: "winSize",
+        varVal: winSize
+    }, {
+        varName: "screenSize",
+        varVal: screenSize
+    }]
+    
+});
+
+//获取元素的宽高
+wky_define("wky.dom", function(dom){
+    var core = wky.core;
+    
+    //是否是element节点 
+    var isUseableElement = function(node){
+        if (!core.isNode(node) || node.nodeType !== 1) {
+            return false;
+        }
+        return true;
+    }
+    
+    //获取或者设置节点宽度
+    var width = function(node, width){
+        //必须是元素节点才行
+        if (!isUseableElement(node)) {
+            return;
+        }
+        if (!core.isUndefined(width)) {
+            if (core.isNumber(width) && width < 0) {
+                width = 0;
+            }
+            width = core.isNumberStr(width) ? width + "px" : width;
+            return dom.setStyle(node, "width", width);
+        }
+        return node.offsetWidth;
+    };
+    
+    //获取或者设置节点高度
+    var height = function(node, height){
+        if (!isUseableElement(node)) {
+            return;
+        }
+        if (!core.isUndefined(height)) {
+            if (core.isNumber(height) && height < 0) {
+                height = 0;
+            }
+            height = core.isNumberStr(height) ? height + "px" : height;
+            return dom.setStyle(node, "height", height);
+        }
+        return node.offsetHeight;
+    }
+    
+    //获取内部宽度 ，不包括滚动条，不包括border
+    var innerWidth = function(node){
+        if (!isUseableElement(node)) {
+            return;
+        }
+        return node.clientWidth;
+    }
+    
+    //获取内部高度 ，不包括滚动条，不包括border
+    var innerHeight = function(node){
+        if (!isUseableElement(node)) {
+            return;
+        }
+        return node.clientHeight;
+    }
+    
+    var html = function(node, val){
+        if (!isUseableElement(node)) {
+            return;
+        }
+        if (core.isUndefined(val)) {
+            return node.innerHTML;
+        }
+        return node.innerHTML = val;
+    }
+    
+    var offset = function(node){
+        if (!isUseableElement(node)) {
+            return;
+        }
+        var offset = {
+            left: 0,
+            top: 0,
+            width: node.offsetWidth,
+            height: node.offsetHeight
+        };
+        var doc = node.ownerDocument;
+        try {
+            if (node.getBoundingClientRect) {
+                var box = node.getBoundingClientRect();
+                var body = doc.body;
+                var de = doc.documentElement;
+                offset.left = box.left + (win.pageXOffset || de.scrollLeft) - (de.clientLeft || body.clientLeft || 0);
+                offset.top = box.top + (win.pageYOffset || de.scrollTop) - (de.clientTop || body.clientTop || 0);
+            }
+        } 
+        catch (e) {
+        }
+        return offset;
+        
+    };
+    
+    return [{
+        varName: "width",
+        varVal: width
+    }, {
+        varName: "height",
+        varVal: height
+    }, {
+        varName: "innerHeight",
+        varVal: innerHeight
+    }, {
+        varName: "innerWidth",
+        varVal: innerWidth
+    }, {
+        varName: "html",
+        varVal: html
+    }, {
+        varName: "offset",
+        varVal: offset
+    }]
+});
+
+//当前页面的高度
+wky_define("wky.dom", function(){
+
+    /*var getDocSize = function(){
+     var D = document;
+     var height = Math.max(Math.max(D.body.scrollHeight, D.documentElement.scrollHeight), Math.max(D.body.offsetHeight, D.documentElement.offsetHeight), Math.max(D.body.clientHeight, D.documentElement.clientHeight));
+     var width = Math.max(Math.max(D.body.scrollWidth, D.documentElement.scrollWidth), Math.max(D.body.offsetWidth, D.documentElement.offsetWidth), Math.max(D.body.clientWidth, D.documentElement.clientWidth));
+     return [widht, height]
+     }*/
+    var pageSize = function(win){
+        var doc = win ? win.document : document;
+        var compatMode = doc.compatMode != "CSS1Compat";
+        var innerWidth = win.innerWidth;
+        var innerHeight = win.innerHeight;
+        var root = compatMode ? doc.body : doc.documentElement;
+        if (doc.compatMode) {
+            innerWidth = root.clientWidth;
+            innerHeight = root.clientHeight;
+        }
+        return {
+            width: Math.max(root.scrollWidth, innerWidth),
+            height: Math.max(root.scrollHeight, innerHeight)
+        };
     }
     
     return {
-        varName: "getWinSize",
-        varVal: getWinSize
+        varName: "pageSize",
+        varVal: pageSize
     }
 });
-//当前页面的高度
-wky_define("wky.dom", function(){
-    var getDocSize = function(){
-        var D = document;
-        var height = Math.max(Math.max(D.body.scrollHeight, D.documentElement.scrollHeight), Math.max(D.body.offsetHeight, D.documentElement.offsetHeight), Math.max(D.body.clientHeight, D.documentElement.clientHeight));
-        var width = Math.max(Math.max(D.body.scrollWidth, D.documentElement.scrollWidth), Math.max(D.body.offsetWidth, D.documentElement.offsetWidth), Math.max(D.body.clientWidth, D.documentElement.clientWidth));
-        return [widht, height]
-    }
-    return {
-        varName: "getDocSize",
-        varVal: getDocSize
-    }
-});
+
 //class
 wky_define("wky.dom", function(){
     var hasClass = function(ele, cls){
@@ -537,6 +799,7 @@ wky_define("wky.dom", function(){
         varName: "removeClass",
         varVal: removeClass
     }];
+    
 });
 wky_define("wky.dom", function(dom){
     /**
@@ -566,13 +829,11 @@ wky_define("wky.dom", function(dom){
      *  - JSSpec BDD framework
      *
      * Kudos to every single one of them for supporting the open web.
-	 * 
-	 * 暂时用一下 thanks kudos
+     *
+     * 暂时用一下 thanks kudos
      */
     var Sly = (function(){
-    
         var cache = {};
-        
         /**
          * Sly::constructor
          *
@@ -1849,7 +2110,200 @@ wky_define("wky.common", function(){
         varName: "deepCopy",
         varVal: deepCopy
     }]
-})
+});
+
+/*
+ * 定义事件
+ *
+ */
+wky_define("wky", function(){
+    //整个页面一个事件系统
+    var doc = document;
+    var isDomReady = false;
+    var domReady = function(callback){
+        if (!callback) {
+            return;
+        }
+        var ready = function(){
+            isDomReady = true;
+            callback();
+        }
+        var domLoaded = function(){
+            if (doc.addEventListener) {
+                doc.removeEventListener("DOMContentLoaded", domLoaded, false);
+                ready();
+            }
+            else {
+                if (doc.readyState === "complete") {
+                    doc.detachEvent("onreadystatechange", domLoaded);
+                    ready();
+                }
+            }
+        }
+        if (doc.addEventListener) {
+            doc.addEventListener("DOMContentLoaded", domLoaded, false);
+            window.addEventListener("load", ready);
+        }
+        else {
+            doc.attachEvent("onreadystatechange", domLoaded);
+            window.attachEvnet("load", ready);
+            var top = false;
+            try {
+                top = window.frameElement == null && document.documentElement;
+            } 
+            catch (e) {
+            }
+            if (top && top.doScroll) {
+                (function doScrollCheck(){
+                    if (!isDomReady) {
+                        try {
+                            top.doScroll("left");
+                        } 
+                        catch (e) {
+                            return setTimeout(doScrollCheck, 50);
+                        }
+                        ready();
+                    }
+                })();
+            }
+        }
+    }
+    return [{
+        varName: "domReady",
+        varVal: domReady
+    }];
+});
+
+//wky 的事件对象
+wky_define("wky.event", function(){
+    var core = wky.core;
+    var win = window;
+    var doc = document;
+    //是否是element节点 
+    var isUseableElement = function(node){
+        if (!core.isNode(node) || node.nodeType !== 1 || node.nodeType !== 9) {
+            return false;
+        }
+        return true;
+    }
+    //event object 
+    //{ele:"",click:[],mousover:""}
+    var eventList = [];
+    
+	//根据节点找到事件节点
+    var getBindedEvt = function(node){
+        var evt = null;
+        //todo:是时的终止循环
+        core.each(eventList, function(i, v){
+            if (!v) {
+                return;
+            }
+            if (v.ele === node) {
+                evt = v;
+                return false;
+            }
+        });
+        return evt;
+    }
+    
+    //绑定事件
+    var addEvent = function(node, type, fn){
+        if (doc.addEventListener) {
+            node.addEventListener(type, fn, false);
+        }
+        else {
+            node.attachEvent("on" + type, fn);
+        }
+    }
+    
+    //移除事件
+    var removeEvent = function(){
+    
+    }
+    //添加到列表
+    var addToList = function(node, type, fn){
+        if (!isUseableElement(node) || !type) {
+            return;
+        }
+        //todo:应该切入进去，统一组织event对象
+        var evtObj = getBindedEvt(node);
+        if (!evtObj) {
+            evtObj = {
+                ele: node,
+                type: [fn],
+                baseFn: baseFn
+            }
+            var baseFn = core.bind(function(evLs, nd){
+				var args = [].slice.call(arguments,2);
+                core.forEach(evLs,function(v, i){
+                	if(isFunction(v)){
+						v.apply(nd,args);
+					}
+                });
+            }, evtObj[type], node);
+            eventList.push(evtObj);
+            //绑定事件
+            addEvent(node, type, baseFn);
+        }
+        else {
+            if (type in evtObj) {
+                evtObj.type.push(fn);
+            }
+            else {
+                evtObj[type] = [fn];
+            }
+        }
+    }
+	
+    //从列表中移除
+    var removeFromList = function(node, type, fn){
+        if (!isUseableElement(node) || !type) {
+            return;
+        }
+        //todo:应该切入进去，统一组织event对象
+        var evtObj = getBindedEvt(node);
+        if (!evtObj) {
+            return;
+        }
+        else {
+            if (type in evtObj) {
+            	//find fn
+				
+				
+                evtObj.type.push(fn);
+                
+            }
+            else {
+                evtObj[type] = [fn];
+            }
+        }
+        //绑定事件
+        addEvent(node, type, fn);
+    }
+    
+    
+    //todo:process
+    var add = function(){
+    
+    }
+    
+    var remove = function(){
+    
+    }
+    
+    var addOnce = function(){
+    
+    }
+    
+    var removeAll = function(){
+    
+    }
+    
+    return [{}];
+    
+});
+
+
 
 wky_define("wky.cookie", function(){
 

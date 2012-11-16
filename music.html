@@ -15,7 +15,37 @@
             
             .music-title {
             }
+			.music-player-lrc{
+				width:360px;
+				height:400px;
+				background:#007c98;
+				color:#ffffff;
+				position:relative;
+				overflow:hidden;
+				font-size:14px;
+				font-family:yahei;
+			}
+			.music-player-lrc ul{
+				position:absolute;
+				width:100%;
+			}
+			
+			.music-player-lrc ul li {
+				overflow:hidden;
+				text-align:center;
+				line-height:30px;
+				height:30px;
+			}
+			.music-player-lrc ul li.current{
+				color:#EB6825;
+			}
+			
+			.music-player-lrc ul li span{
+				line-height:15px;
+				height:15px;
+			}
         </style>
+		<script type="text/javascript" src="script/jquery.min.js"></script>
         <script type="text/javascript" src="script/define.js"></script>
         <script type="text/javascript" src="script/music_player.js"></script>
     </head>
@@ -41,42 +71,98 @@
                 <div class="player-ui" style="width:200px;">
                     <div id="loaded-bar" style="background:green; opacity:0.7;">
                     </div>
-					<input id="music-play" type="button" value="播放">
+                    <div id="played-bar" style="background:yellow; opacity:0.6">
+                    </div>
+                    <input id="music-play" type="button" value="播放"><input id="music-pause" type="button" value="暂停"><input id="music-volume-a" type="button" value="音量+"><input id="music-volume-m" type="button" value="音量-">
+                    <br/>
+                    <input id="music-clear" type="button" value="清除">
                 </div>
+				<div id="music-lrc" class="music-player-lrc">
+					<ul>
+						<li>firstname</li>
+						<li>firstname , young man</li>
+						<li>firstname , young man</li>
+						<li><span>firstname , young man, young man, young manfirstname,firstname as </span></li>
+						<li>firstname</li>
+						<li>firstname, young man</li>
+						<li>firstname, young man, young man, young man</li>
+						<li>firstname</li>
+						<li>firstname, young man, young man</li>
+					</ul>
+				</div>
             </div>
-        </div>
-        <script type="text/javascript">
+        </div><script type="text/javascript">
             
             var dom = wky.dom;
             
             var py = document.getElementById("player");
             var mp = document.getElementById("music-play");
+            var mpa = document.getElementById("music-pause");
+            var mva = document.getElementById("music-volume-a");
+            var mvm = document.getElementById("music-volume-m");
+            var mc = document.getElementById("music-clear");
+            
             var lb = document.getElementById("loaded-bar");
-
+            var pb = document.getElementById("played-bar");
+            var duration = 0;
+            
             var playerColl = wky.plugins.playerCollection;
             
-			var ply = playerColl.add({
+            var ply = playerColl.add({
                 ele: py,
                 preload: "auto",
-                loadProgress: function(evt, loaded, dur, pen){
+                loadProgress: function(loaded, dur){
+                    duration = dur;
                     dom.setStyle(lb, {
-                        width: parseInt(pen) * 100 + "%"
+                        width: (loaded * 100) + "%"
                     });
-					lb.innerHTML = parseInt(pen) * 100 + "%";
-                    console.log(loaded + ":" + dur);
+                    lb.innerHTML = (loaded * 100) + "%";
+                },
+                uploadPlayhead: function(played){
+                    dom.setStyle(pb, {
+                        width: (played * 100) + "%"
+                    });
+					var played = parseInt((played * duration)*1000);
+                    pb.innerHTML = played;
+					muLrc.showLine(played);
                 }
             });
-			//= new Player();
+			
+			var muLrc = new wky.plugins.MusicLRC({
+				pannel:dom.search("#music-lrc")
+			});
+			//muLrc.
+			
+            //= new Player();
             
-            mp.onclick = function(){
-				ply.setAudio({
-					mp3: "http://zhifeiji.aliapp.com/music/yin-tian.mp3?2wwe3"
-				});
-				ply.volume(0.8);
-				ply.pause(NaN);
-                ply.play(0);
+            mc.onclick = function(){
+                console.log("is cleared !!");
+                var player = document.getElementById('_player_1');
+                if (player && player.nodeName == "OBJECT") {
+                    player.parentNode.removeChild(player);
+                }
+				ply.player = null;
+                psp.player = null;
+				
             }
-
+            
+            var psp = playerColl.get(ply.playerId);
+            var volumeDefault = 0.8;
+            mp.onclick = function(){
+                ply.setAudio("http://zhifeiji.aliapp.com/music/yin-tian.mp3?2wwe3");
+                ply.volume(volumeDefault);
+                ply.pause();
+                ply.play();
+            }
+            mpa.onclick = function(){
+                ply.pause();
+            };
+            mva.onclick = function(){
+                ply.volume(volumeDefault += 0.1);
+            }
+            mvm.onclick = function(){
+                ply.volume(volumeDefault -= 0.1);
+            }
         </script>
     </body>
 </html>

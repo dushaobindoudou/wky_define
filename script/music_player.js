@@ -64,15 +64,15 @@ wky_define("wky.plugins", function(plugin){
             return "_player_" + id;
         }
     }()
-	
-	var getMusicId = function(){
+    
+    var getMusicId = function(){
         var id = 0;
         return function(){
             id++;
             return "_music_" + id;
         }
     }()
-	
+    
     
     var createFlashPlayer = function(ele, id, src, instance, preload){
         if (!id) {
@@ -132,6 +132,7 @@ wky_define("wky.plugins", function(plugin){
             obj.parentNode.removeChild(obj);
         }
     }
+    
     
     /*
      *
@@ -400,11 +401,11 @@ wky_define("wky.plugins", function(plugin){
             this.next();
         },
         updatePlaying: function(mdx){
-        	var idx = findMdx(mdx);
-			if(idx > -1){
-				this.currentPlay = idx;
-				this.playMusic();
-			}
+            var idx = findMdx(mdx);
+            if (idx > -1) {
+                this.currentPlay = idx;
+                this.playMusic();
+            }
             return this;
         },
         next: function(){
@@ -426,38 +427,38 @@ wky_define("wky.plugins", function(plugin){
             if (mode in playListModes) {
                 this.playMode = mode;
             }
-			return this;
+            return this;
         },
         addMusic: function(music){
-			//todo:应该clone 一下
-        	if(!music || !music.mp3){
-				return this;
-			}
-			music.mdx = getMusicId();
-			this.playList.push(music);
-			return this;
+            //todo:应该clone 一下
+            if (!music || !music.mp3) {
+                return this;
+            }
+            music.mdx = getMusicId();
+            this.playList.push(music);
+            return this;
         },
-		findMdx:function(mdx){
-			if(!mdx){
-				return -1;
-			}
-			var pl = this.playList;
-			for(var i=0; i<pl;i++){
-				if(pl[i] && pl[i].mdx == mdx){
-					return i;
-				}
-			}
-			return -1;
-		},
+        findMdx: function(mdx){
+            if (!mdx) {
+                return -1;
+            }
+            var pl = this.playList;
+            for (var i = 0; i < pl; i++) {
+                if (pl[i] && pl[i].mdx == mdx) {
+                    return i;
+                }
+            }
+            return -1;
+        },
         removeMusic: function(mdx){
-        	if(!mdx){
-				return this;
-			}
-			var idx = findMdx(mdx);
-			if(idx > -1){
-				this.playList.splice(idx,1);
-			}
-			return this;
+            if (!mdx) {
+                return this;
+            }
+            var idx = findMdx(mdx);
+            if (idx > -1) {
+                this.playList.splice(idx, 1);
+            }
+            return this;
         },
         getNextPlayIdx: function(){
             var self = this;
@@ -493,19 +494,164 @@ wky_define("wky.plugins", function(plugin){
      * 音乐歌词，要写个lrc转换的形式
      *
      */
-    var MusicLRC = function(){
-    	//this
-		this.lrc = "";
-		
-		
+    var MusicLRC = function(options){
+        //this
+        this.lrc = {
+            "2000": "歌曲名称：阴天",
+            "4760": "歌手名称：莫文蔚",
+            "6220": "词曲：作词：李宗盛",
+            "6760": "作曲：李宗盛/周国仪",
+            "8920": "编曲：周国仪",
+            "10020": "制作：刘建平",
+            "14520": "QQ：33975183",
+            "19380": "阴天　在不开灯的房间",
+            "22400": "当所有思绪都一点一点沉淀",
+            "26160": "爱情究竟是精神鸦片",
+            "29180": "还是世纪末的无聊消遣",
+            "33490": "香烟　氲成一滩光圈",
+            "36800": "和他的照片就摆在手边",
+            "40290": "傻傻两个人　笑的多甜",
+            "43810": "",
+            "46680": "开始总是分分钟都妙不可言",
+            "51040": "谁都以为热情它永不会减",
+            "54260": "除了激情褪去后的那一点点倦",
+            "60980": "也许像谁说过的贪得无厌",
+            "64990": "活该应了谁说过的不知检点",
+            "68630": "总之那几年　感性赢了理性的那一面",
+            "72510": "",
+            "91520": "阴天　在不开灯的房间",
+            "94110": "当所有思绪都一点一点沉淀",
+            "97660": "爱恨情欲里的疑点",
+            "100360": "盲点　呼之欲出　那么明显",
+            "105190": "女孩　通通让到一边",
+            "108300": "这歌里的细微末节就算都体验",
+            "112120": "若想真明白　真要好几年",
+            "116150": "",
+            "147670": "回想那一天　喧闹的喜宴",
+            "154930": "耳边响起的究竟是序曲或完结篇",
+            "162080": "感情不就是你情我愿",
+            "165200": "最好爱恨扯平两不相欠",
+            "168900": "感情说穿了　一人挣脱的　一人去捡",
+            "175480": "男人大可不必百口莫辩",
+            "179530": "女人实在无须楚楚可怜",
+            "183110": "总之那几年　你们两个没有缘",
+            "192990": "阴天　在不开灯的房间",
+            "196100": "当所有思绪都一点一点沉淀",
+            "199630": "爱情究竟是精神鸦片",
+            "202820": "还是世纪末的无聊消遣",
+            "207220": "香烟　氲成一滩光圈",
+            "210440": "和他的照片就摆在手边",
+            "213990": "傻傻两个人　笑的多甜",
+            "221230": "傻傻两个人　笑的多甜"
+            //"timeList": [2000, 4760, 6220, 6760, 8920, 10020, 14520, 19380, 22400, 26160, 29180, 33490, 36800, 40290, 43810, 46680, 51040, 54260, 60980, 64990, 68630, 72510, 91520, 94110, 97660, 100360, 105190, 108300, 112120, 116150, 147670, 154930, 162080, 165200, 168900, 175480, 179530, 183110, 192990, 196100, 199630, 202820, 207220, 210440, 213990, 221230]
+        };
+        this.lrcTimeList = null;
+        this.prevLine = null;
+        this.lrcListHeight = 0;
+        this.currentLine = 0;
+        this.currentTick = 0;
+        this.pannel = options.pannel || "";
+        this.lrcList = null;
         this.init();
     }
     
     MusicLRC.prototype = {
         constructor: MusicLRC,
-        init: function(){
-        	
+        init: function(lrc){
+            this.setLRC(lrc);
+            this.updatePannel(this.pannel);
+            this.lrcList = dom.search("ul", this.pannel);
+			
+			this.lrcListHeight = dom.innerHeight(this.pannel[0]);
+        },
+        setLRC: function(lrc){
+            var that = this;
+            if (!lrc || isString(lrc)) {
+                //paseLRC2JSON();
+            }
+            else {
+                this.lrc = lrc;
+            }
+            if ("timeList" in this.lrc && this.lrc["timeList"].length > 0) {
+                //todo:复制一个副本 
+                this.lrcTimeList = this.lrc["timeList"];
+            }
+            else {
+                this.genTimeList();
+            }
+        },
+        genTimeList: function(){
+            var list = [];
+            core.forIn(this.lrc, function(v, k){
+                if (!v || !v.match(/^\d+$/)) {
+                    return;
+                }
+                list.push(v);
+            });
+            this.lrcTimeList = list;
+        },
+        renderLRC: function(){
+            var ht = ['<ul>'];
+            core.forIn(this.lrc, function(k, v){
+                ht.push('<li tick="' + k + '">' + v + '</li>');
+            });
+            ht.push('</ul>');
+            core.forEach(this.pannel, function(v, i){
+                dom.html(v, ht.join(""))
+            });
+            //dom.html(this.pannel,);
+            return ht;
+        },
+        updatePannel: function(hander){
+            if (!hander) {
+                return;
+            }
+            this.destoryPannel();
+            this.pannel = hander;
+            this.renderLRC();
+        },
+        destoryPannel: function(){
+            core.forEach(this.pannel, function(v, i){
+                dom.html(v, "");
+            });
+        },
+        showLine: function(tick){
+            if (!tick) {
+                return "";
+            }
+            var currentTick = parseInt(this.lrcTimeList[this.currentLine]);
+            var that = this;
+            if (currentTick - 10 < tick) {
+                tick = currentTick;
+                this.currentLine++;
+            }
+            if (!this.lrc[tick]) {
+                return "";
+            }
+            if (this.prevLine) {
+                core.forEach(this.prevLine, function(v, i){
+                    dom.removeClass(v, "current");
+                })
+            }
+            var currentLine = dom.search("li[tick=" + tick + "]", this.lrcList);
+            core.forEach(currentLine, function(v, i){
+                dom.addClass(v, "current");
+            });
+            that.prevLine = currentLine;
+			
+			var liHeight = dom.height(currentLine[0]);
+			
+			this.animate(liHeight * this.currentLine);
+			
+            return this.lrc[tick];
+        },
+        animate: function(relat){
+        	var midHeight = this.lrcListHeight /2 ;
+			dom.setStyle(this.lrcList[0],{
+				top: (midHeight - relat) + "px"
+			});
         }
+        
     }
     
     var playerIn = function(colls, id){
@@ -543,6 +689,9 @@ wky_define("wky.plugins", function(plugin){
     }, {
         varName: "playerCollection",
         varVal: playerCollection
+    }, {
+        varName: "MusicLRC",
+        varVal: MusicLRC
     }]
 })
 

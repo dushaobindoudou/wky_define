@@ -313,9 +313,12 @@ wky_define("wky.core", function(core){
     }
     
     var isNumberStr = function(obj){
+<<<<<<< HEAD
         if (isNumber(obj)) {
             return true;
         }
+=======
+>>>>>>> d45dc5fc784531ee905c0465470e8a97525743aa
         if (isString(obj)) {
             //todo:包含e，
             return !!obj.match(/^[0-9]*(\.)?\d+$/);
@@ -323,7 +326,11 @@ wky_define("wky.core", function(core){
         return false;
     }
     
+<<<<<<< HEAD
     var isFunction = function(obj){
+=======
+    var isFunction = function(){
+>>>>>>> d45dc5fc784531ee905c0465470e8a97525743aa
         return Object.prototype.toString.call(obj) === "[object Function]";
     }
     
@@ -653,6 +660,7 @@ wky_define("wky.dom", function(){
      * @method screenSize
      */
     var screenSize = function(win){
+<<<<<<< HEAD
         var doc = win ? win.document : document;
 		var de = doc.documentElement;
 		var db = doc.body;
@@ -660,6 +668,12 @@ wky_define("wky.dom", function(){
         return {
             height: root.clientHeight || win.innerHeight,
             width: root.clientWidth || win.innerWidth
+=======
+        var doc = win ? win.document : document, de = doc.documentElement, db = doc.body;
+        return {
+            height: de.clientHeight || $.win.innerHeight || db.clientHeight,
+            width: de.clientWidth || $.win.innerWidth || db.clientWidth
+>>>>>>> d45dc5fc784531ee905c0465470e8a97525743aa
         };
     };
     
@@ -670,6 +684,10 @@ wky_define("wky.dom", function(){
         varName: "screenSize",
         varVal: screenSize
     }]
+<<<<<<< HEAD
+=======
+    
+>>>>>>> d45dc5fc784531ee905c0465470e8a97525743aa
 });
 
 //获取元素的宽高
@@ -745,28 +763,45 @@ wky_define("wky.dom", function(dom){
         if (!isUseableElement(node)) {
             return;
         }
+<<<<<<< HEAD
         var off = {
+=======
+        var offset = {
+>>>>>>> d45dc5fc784531ee905c0465470e8a97525743aa
             left: 0,
             top: 0,
             width: node.offsetWidth,
             height: node.offsetHeight
         };
         var doc = node.ownerDocument;
+<<<<<<< HEAD
 		var win = window;
 		var de = doc.documentElement;
 		var body = document.body;
+=======
+>>>>>>> d45dc5fc784531ee905c0465470e8a97525743aa
         try {
             if (node.getBoundingClientRect) {
                 var box = node.getBoundingClientRect();
                 var body = doc.body;
                 var de = doc.documentElement;
+<<<<<<< HEAD
                 off.left = box.left + (win.pageXOffset || de.scrollLeft) - (de.clientLeft || body.clientLeft || 0);
                 off.top = box.top + (win.pageYOffset || de.scrollTop) - (de.clientTop || body.clientTop || 0);
+=======
+                offset.left = box.left + (win.pageXOffset || de.scrollLeft) - (de.clientLeft || body.clientLeft || 0);
+                offset.top = box.top + (win.pageYOffset || de.scrollTop) - (de.clientTop || body.clientTop || 0);
+>>>>>>> d45dc5fc784531ee905c0465470e8a97525743aa
             }
         } 
         catch (e) {
         }
+<<<<<<< HEAD
         return off;
+=======
+        return offset;
+        
+>>>>>>> d45dc5fc784531ee905c0465470e8a97525743aa
     };
     
     return [{
@@ -2262,7 +2297,11 @@ wky_define("wky.event", function(){
     var doc = document;
     //是否是element节点 
     var isUseableElement = function(node){
+<<<<<<< HEAD
         if (!core.isNode(node) || (node.nodeType !== 1 && node.nodeType !== 9)) {
+=======
+        if (!core.isNode(node) || node.nodeType !== 1 || node.nodeType !== 9) {
+>>>>>>> d45dc5fc784531ee905c0465470e8a97525743aa
             return false;
         }
         return true;
@@ -2271,7 +2310,11 @@ wky_define("wky.event", function(){
     //{ele:"",click:[],mousover:""}
     var eventList = [];
     
+<<<<<<< HEAD
     //根据节点找到事件节点
+=======
+	//根据节点找到事件节点
+>>>>>>> d45dc5fc784531ee905c0465470e8a97525743aa
     var getBindedEvt = function(node){
         var evt = null;
         //todo:是时的终止循环
@@ -2286,6 +2329,7 @@ wky_define("wky.event", function(){
         });
         return evt;
     }
+<<<<<<< HEAD
 	//停止冒泡
 	var stopPropagation = function(evt){
 		if(!evt){
@@ -2323,6 +2367,8 @@ wky_define("wky.event", function(){
         });
         return idx;
     }
+=======
+>>>>>>> d45dc5fc784531ee905c0465470e8a97525743aa
     
     //绑定事件
     var addEvent = function(node, type, fn){
@@ -2335,6 +2381,7 @@ wky_define("wky.event", function(){
     }
     
     //移除事件
+<<<<<<< HEAD
     var removeEvent = function(node, type, fn){
         if (doc.removeEventListener) {
             node.removeEventListener(type, fn, false);
@@ -2346,6 +2393,13 @@ wky_define("wky.event", function(){
     
     //添加到列表
     var addToList = function(node, type, fn, execed){
+=======
+    var removeEvent = function(){
+    
+    }
+    //添加到列表
+    var addToList = function(node, type, fn){
+>>>>>>> d45dc5fc784531ee905c0465470e8a97525743aa
         if (!isUseableElement(node) || !type) {
             return;
         }
@@ -2354,6 +2408,7 @@ wky_define("wky.event", function(){
         if (!evtObj) {
             evtObj = {
                 ele: node,
+<<<<<<< HEAD
                 baseFn: null
             }
             evtObj[type] = [fn];
@@ -2366,10 +2421,31 @@ wky_define("wky.event", function(){
                 evtObj[type].push(fn);
                 //已经绑定了
                 return;
+=======
+                type: [fn],
+                baseFn: baseFn
+            }
+            var baseFn = core.bind(function(evLs, nd){
+				var args = [].slice.call(arguments,2);
+                core.forEach(evLs,function(v, i){
+                	if(isFunction(v)){
+						v.apply(nd,args);
+					}
+                });
+            }, evtObj[type], node);
+            eventList.push(evtObj);
+            //绑定事件
+            addEvent(node, type, baseFn);
+        }
+        else {
+            if (type in evtObj) {
+                evtObj.type.push(fn);
+>>>>>>> d45dc5fc784531ee905c0465470e8a97525743aa
             }
             else {
                 evtObj[type] = [fn];
             }
+<<<<<<< HEAD
             //绑定事件
             //addEvent(node, type, evtObj.baseFn);
         }
@@ -2397,6 +2473,11 @@ wky_define("wky.event", function(){
         //绑定事件
         addEvent(node, type, evtObj.baseFn);
     }
+=======
+        }
+    }
+	
+>>>>>>> d45dc5fc784531ee905c0465470e8a97525743aa
     //从列表中移除
     var removeFromList = function(node, type, fn){
         if (!isUseableElement(node) || !type) {
@@ -2409,6 +2490,7 @@ wky_define("wky.event", function(){
         }
         else {
             if (type in evtObj) {
+<<<<<<< HEAD
                 if (!core.isFunction(fn)) {
                     evtObj[type] = [];
                     removeEvent(node, type, evtObj.baseFn);
@@ -2786,6 +2868,42 @@ wky_define("wky.tween", function(){
         varName: "animate",
         varVal: animate
     }
+=======
+            	//find fn
+				
+				
+                evtObj.type.push(fn);
+                
+            }
+            else {
+                evtObj[type] = [fn];
+            }
+        }
+        //绑定事件
+        addEvent(node, type, fn);
+    }
+    
+    
+    //todo:process
+    var add = function(){
+    
+    }
+    
+    var remove = function(){
+    
+    }
+    
+    var addOnce = function(){
+    
+    }
+    
+    var removeAll = function(){
+    
+    }
+    
+    return [{}];
+    
+>>>>>>> d45dc5fc784531ee905c0465470e8a97525743aa
 });
 
 

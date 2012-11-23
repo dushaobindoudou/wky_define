@@ -570,6 +570,10 @@ wky_define("wky.plugins", function(plugin){
             "210440": "和他的照片就摆在手边",
             "213990": "傻傻两个人　笑的多甜",
             "221230": "傻傻两个人　笑的多甜"
+<<<<<<< HEAD
+=======
+            //"timeList": [2000, 4760, 6220, 6760, 8920, 10020, 14520, 19380, 22400, 26160, 29180, 33490, 36800, 40290, 43810, 46680, 51040, 54260, 60980, 64990, 68630, 72510, 91520, 94110, 97660, 100360, 105190, 108300, 112120, 116150, 147670, 154930, 162080, 165200, 168900, 175480, 179530, 183110, 192990, 196100, 199630, 202820, 207220, 210440, 213990, 221230]
+>>>>>>> d45dc5fc784531ee905c0465470e8a97525743aa
         };
         this.lrcTimeList = null;
         this.prevLine = null;
@@ -577,9 +581,12 @@ wky_define("wky.plugins", function(plugin){
         this.currentLine = 0;
         this.currentTick = 0;
         this.pannel = options.pannel || "";
+<<<<<<< HEAD
         this.animEasing = options.easing || "easeOutCubic";
         this.animDuration = options.duration || 250;
         
+=======
+>>>>>>> d45dc5fc784531ee905c0465470e8a97525743aa
         this.lrcList = null;
         this.init();
     }
@@ -590,8 +597,13 @@ wky_define("wky.plugins", function(plugin){
             this.setLRC(lrc);
             this.updatePannel(this.pannel);
             this.lrcList = dom.search("ul", this.pannel);
+<<<<<<< HEAD
             
             this.lrcListHeight = dom.innerHeight(this.pannel[0]);
+=======
+			
+			this.lrcListHeight = dom.innerHeight(this.pannel[0]);
+>>>>>>> d45dc5fc784531ee905c0465470e8a97525743aa
         },
         setLRC: function(lrc){
             var that = this;
@@ -628,6 +640,10 @@ wky_define("wky.plugins", function(plugin){
             core.forEach(this.pannel, function(v, i){
                 dom.html(v, ht.join(""))
             });
+<<<<<<< HEAD
+=======
+            //dom.html(this.pannel,);
+>>>>>>> d45dc5fc784531ee905c0465470e8a97525743aa
             return ht;
         },
         updatePannel: function(hander){
@@ -659,13 +675,18 @@ wky_define("wky.plugins", function(plugin){
             if (this.prevLine) {
                 core.forEach(this.prevLine, function(v, i){
                     dom.removeClass(v, "current");
+<<<<<<< HEAD
                 });
+=======
+                })
+>>>>>>> d45dc5fc784531ee905c0465470e8a97525743aa
             }
             var currentLine = dom.search("li[tick=" + tick + "]", this.lrcList);
             core.forEach(currentLine, function(v, i){
                 dom.addClass(v, "current");
             });
             that.prevLine = currentLine;
+<<<<<<< HEAD
             
             var liHeight = dom.height(currentLine[0]);
             
@@ -688,7 +709,22 @@ wky_define("wky.plugins", function(plugin){
                     });
                 }
             });
+=======
+			
+			var liHeight = dom.height(currentLine[0]);
+			
+			this.animate(liHeight * this.currentLine);
+			
+            return this.lrc[tick];
+        },
+        animate: function(relat){
+        	var midHeight = this.lrcListHeight /2 ;
+			dom.setStyle(this.lrcList[0],{
+				top: (midHeight - relat) + "px"
+			});
+>>>>>>> d45dc5fc784531ee905c0465470e8a97525743aa
         }
+        
     }
     
     var playerIn = function(colls, id){
@@ -729,9 +765,12 @@ wky_define("wky.plugins", function(plugin){
     }, {
         varName: "MusicLRC",
         varVal: MusicLRC
+<<<<<<< HEAD
     }, {
         varName: "PlayListUI",
         varVal: PlayListUI
+=======
+>>>>>>> d45dc5fc784531ee905c0465470e8a97525743aa
     }]
 })
 

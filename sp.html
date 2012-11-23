@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+		<title>测试</title>
+		<script type="text/javascript" src="script/jquery.min.js"></script>
+	</head>
+	<body>
+		<div>
+			<ul id="qas">
+				<li><input type="text" />:<input ansower type="text" /></li>
+			</ul>
+		</div>
+		
+		<script type="text/javascript">
+			
+			var qa = {
+				"上海":"SHA"
+			};
+			
+			var each = function(obj,fn){
+				if(!obj || !fn){
+					return;
+				}
+				for(var k in obj){
+					if(obj.hasOwnProperty(k)){
+						fn(obj,k,obj[k]);
+					}
+				}
+			}
+			
+			
+			var qaEle = $("#qas");
+			var eleHtml = "";
+			each(qa,function(obj,q,a){
+				eleHtml += '<li><input question="'+q+'" type="text" value="'+q+'" />:<input ans type="text" /><span></span></li>';
+			})
+			qaEle.html(eleHtml);
+			qaEle.delegate("input[ans]","blur",function(){
+				var that = $(this);
+				var par = that.parent();
+				var q = par.find("input[question]").attr("question");
+				if(that.val() == qa[q]){
+					par.find("span").html("√");
+				}else{
+					par.find("span").html("X");
+				}
+			});
+			
+			
+		</script>
+	</body>
+</html>

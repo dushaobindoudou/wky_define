@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<head>
+    <title>测试</title>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <script type="text/javascript" src="script/jquery.min.js"></script>
+    <script type="text/javascript" src="script/aiolia.js"></script>
+    <style type="text/css">
+        p {
+            line-height: 4px;
+        }
+    </style>
+</head>
+<body style="overflow:auto; margin:0; padding:0;">
+    <div style="border:1px solid red; height:498px; position:relative; margin-top:0;">
+        <div id="t1" style="background:#34edec; width:300px; height:200px; position:absolute;">
+            线性运行
+        </div>
+        <div id="t2" style="background:#34aaec; width:200px; height:200px; position:absolute; left:310px">
+            旋转
+        </div>
+        <div id="t3" style="background:#eeaaec; width:200px; height:200px; position:absolute; left:520px">
+            渐变
+        </div>
+        <div id="t4" style="background:#ef22fc; width:50px; height:50px; position:absolute; left:320px; top:200px;">
+            圆形
+        </div>
+        <div style="with:30px; bottom:0; height:25px; width:100%; border:1px solid green; position:absolute;">
+            <input type="button" id="run" value="点击前进" /><input type="button" id="run-back" value="点击后退" />缓动:
+            <select id="tween">
+                <option>easeInBack</option>
+                <option>easeInQuad</option>
+                <option>easeOutQuad</option>
+                <option>easeInOutQuad</option>
+                <option>easeInCubic</option>
+                <option>easeOutCubic</option>
+                <option>easeInOutCubic</option>
+                <option>easeInQuart</option>
+                <option>easeOutQuart</option>
+                <option>easeInOutQuart</option>
+                <option>easeInQuint</option>
+                <option>easeOutQuint</option>
+                <option>swingTo</option>
+            </select>
+            <input id="rotate" type="button" value="旋转" /><input id="angel" type="text" value="360" /><input id="fade" type="button" value="渐变" /><input id="circle" type="button" value="圆形" /><input id="radius" type="text" value="50"/>
+        </div>
+    </div>
+    <div id="stage" style="background:green; width:990px; height:480px; position:absolute; left:10px; top:500px; overflow:hidden;">
+        <div id="a1" style="position:absolute; background:#89cded; width:300px; height:200px; left:0;top:0;">
+            开始我们的教程
+        </div>
+        <div id="a2" style="position:absolute; background:#89deee; width:200px; height:250px;left:310px; top:0;">
+        </div>
+        <div id="a3" style="position:absolute; background:#aecded; width:250px; height:100px; left:520px; top:0;">
+        </div>
+        <div id="a4" style="position:absolute; background:#fcdeee; width:300px; height:100px; left:0; top:210px;">
+        </div>
+        <div id="a5" style="position:absolute; background:#789345; width:180px; height:140px;left:0; top:320px;">
+        </div>
+        <div id="a6" style="position:absolute; background:#dffeac; width:460px; height:100px;left:310px; top:260px;">
+        </div>
+        <div id="a7" style="position:absolute; background:#4455ff; width:110px; height:140px;left:190px; top:320px; ">
+        </div>
+        <div id="a8" style="position:absolute; background:#ee4567; width:300px; height:90px;left:310px; top:370px;">
+        </div>
+        <div id="a9" style="position:absolute; background:#ecaa34; width:250px; height:140px; top:110px; left:520px;">
+        </div>
+        <div id="a10" style="position:absolute; background:#ceaaff; width:150px; height:90px; top:370px; left:620px;">
+        </div>
+        <div id="a11" style="position:absolute; background:#dffeac; width:100px; height:50px;top:0; left:780px;">
+        </div>
+        <div id="a12" style="position:absolute; background:#4455ff; width:100px; height:80px;top:60px; left:780px;">
+        </div>
+        <div id="a13" style="position:absolute; background:#ee4567; width:100px; height:50px; top:150px; left:780px;">
+        </div>
+        <div id="a14" style="position:absolute; background:#ecaa34; width:100px; height:160px;top:210px; left:780px;">
+        </div>
+        <div id="a15" style="position:absolute; background:#ceddff; width:100px; height:80px;top:380px; left:780px;">
+        </div>
+        <div id="a16" style="position:absolute; background:#ceddff; width:100px; height:80px;top:580px; left:500px;">
+        </div>
+        <div id="a17" style="position:absolute; background:#ceaaff; width:100px; height:80px;top:580px; left:600px;">
+        </div>
+        <div id="a18" style="position:absolute; background:#ceeeff; width:100px; height:80px;top:580px; left:700px;">
+        </div>
+        <div class="control" style="float:right;">
+            <input id="begin-animate" type="button" value="开始" /><input id="end-animate" type="button" value="结束" />
+        </div>
+    </div><script type="text/javascript">
+        //轨迹测试
+        var pp = aiolia.addStage([{
+            from: 0,
+            to: 100,
+            pAxisBegin: 2,
+            transfroms: [{
+                ele: "#a16",
+                totalSteps: 100,
+                easing: "easeOutBack",
+                fun: "circle",
+                autoRun: true,
+                args: [200, {
+                    x: 580,
+                    y: 500
+                }]
+            }, {
+                ele: "#a17",
+                totalSteps: 100,
+                easing: "easeOutBack",
+                fun: "circle",
+                args: [250, {
+                    x: 580,
+                    y: 600
+                }]
+            }, {
+                ele: "#a18",
+                totalSteps: 100,
+                easing: "easeOutBack",
+                fun: "circle",
+                args: [150, {
+                    x: 580,
+                    y: 700
+                }]
+            }]
+        }, {
+            from: 0,
+            to: 100,
+            pAxisBegin: 10,
+            transfroms: [{
+                ele: "#a1",
+                fun: "line",
+                args: [1, {
+                    x: 320,
+                    y: 320
+                }, {
+                    x: 0,
+                    y: 0
+                }, "y"]
+            }, {
+                ele: "#a1",
+                fun: "fade",
+                easing: "easeInBack",
+                args: [0, 1]
+            }, {
+                ele: "#a1",
+                fun: "rotate",
+                args: [0, 360]
+            }]
+        }, {
+            from: 0,
+            to: 100,
+            pAxisBegin: 11,
+            transfroms: [{
+                ele: "#a2",
+                fun: "line",
+                args: [0.68, {
+                    x: 780,
+                    y: 320
+                }, {
+                    x: 310,
+                    y: 0
+                }, "y"]
+            }, {
+                ele: "#a2",
+                fun: "fade",
+                args: [0, 1]
+            }, {
+                ele: "#a2",
+                fun: "rotate",
+                easing: "easeInBounce",
+                args: [60, 180]
+            }]
+        }, {
+            from: 410,
+            to: 200,
+            pAxisBegin: 12,
+            transfroms: [{
+                ele: "#a3",
+                fun: "line",
+                args: [-0.611, {
+                    x: 0,
+                    y: 320
+                }, {
+                    x: 520,
+                    y: 0
+                }, "y"]
+            }, {
+                ele: "#a3",
+                fun: "fade",
+                args: [1, 0.4]
+            }, {
+                ele: "#a3",
+                fun: "rotate",
+                args: [80, 180]
+            }]
+        }, {
+            from: 420,
+            to: 480,
+            pAxisBegin: 13,
+            transfroms: [{
+                ele: "#a11",
+                fun: "line",
+                args: [-.410, {
+                    x: 0,
+                    y: 320
+                }, {
+                    x: 780,
+                    y: 0
+                }, "y"]
+            }, {
+                ele: "#a11",
+                fun: "fade",
+                args: [0, 1]
+            }]
+        }, {
+            from: 400,
+            to: 600,
+            pAxisBegin: 14,
+            transfroms: [{
+                ele: "#a7",
+                fun: "zoom",
+                args: [{
+                    width: 110,
+                    height: 140
+                }, {
+                    width: 300,
+                    height: 300
+                }]
+            }, {
+                ele: "#a7",
+                fun: "fade",
+                args: [0, 1]
+            }, {
+                ele: "#a7",
+                fun: "rotate",
+                args: [40, 180]
+            }]
+        }, {
+            from: 400,
+            to: 600,
+            pAxisBegin: 31,
+            transfroms: [{
+                ele: "#a7",
+                fun: "zoom",
+                args: [{
+                    width: 300,
+                    height: 300
+                }, {
+                    width: 110,
+                    height: 140
+                }]
+            }]
+        }, {
+            from: 150,
+            to: 200,
+            pAxisBegin: 15,
+            transfroms: [{
+                ele: "#a12",
+                fun: "line",
+                args: [-.331, {
+                    x: 0,
+                    y: 320
+                }, {
+                    x: 780,
+                    y: 60
+                }, "y"]
+            }, {
+                ele: "#a12",
+                fun: "fade",
+                args: [0, 1]
+            }, {
+                ele: "#a12",
+                fun: "rotate",
+                args: [80, 180]
+            }]
+        }, {
+            from: 210,
+            to: 240,
+            pAxisBegin: 16,
+            transfroms: [{
+                ele: "#a5",
+                fun: "line",
+                args: [-.410, {
+                    x: 780,
+                    y: 0
+                }, {
+                    x: 0,
+                    y: 320
+                }, "y"]
+            }, {
+                ele: "#a5",
+                fun: "fade",
+                args: [0, 1]
+            }]
+        }, {
+            from: 210,
+            to: 240,
+            pAxisBegin: 17,
+            transfroms: [{
+                ele: "#a7",
+                fun: "line",
+                args: [-.559, {
+                    x: 780,
+                    y: -10
+                }, {
+                    x: 190,
+                    y: 320
+                }, "y"]
+            }, {
+                ele: "#a17",
+                fun: "fade",
+                args: [0, 1]
+            }]
+        }, {
+            from: 250,
+            to: 340,
+            pAxisBegin: 18,
+            transfroms: [{
+                ele: "#a10",
+                fun: "line",
+                args: [.769, {
+                    x: 60,
+                    y: -30
+                }, {
+                    x: 620,
+                    y: 370
+                }, "y"]
+            }, {
+                ele: "#a10",
+                fun: "fade",
+                args: [0, 1]
+            }]
+        }, {
+            from: 300,
+            to: 370,
+            pAxisBegin: 19,
+            transfroms: [{
+                ele: "#a8",
+                fun: "line",
+                args: [.7755, {
+                    x: -180,
+                    y: -10
+                }, {
+                    x: 310,
+                    y: 370
+                }, "y"]
+            }, {
+                ele: "#a8",
+                fun: "fade",
+                args: [0, 1]
+            }]
+        }, {
+            from: 300,
+            to: 370,
+            pAxisBegin: 6,
+            transfroms: [{
+                ele: "#a15",
+                fun: "line",
+                args: [.513, {
+                    x: 20,
+                    y: -10
+                }, {
+                    x: 780,
+                    y: 380
+                }, "x"]
+            }, {
+                ele: "#a15",
+                fun: "fade",
+                args: [0, 1]
+            }]
+        }, {
+            from: 300,
+            to: 370,
+            pAxisBegin: 20,
+            transfroms: [{
+                ele: "#a6",
+                fun: "line",
+                args: [.823, {
+                    x: -30,
+                    y: -20
+                }, {
+                    x: 310,
+                    y: 260
+                }, "y"]
+            }, {
+                ele: "#a6",
+                fun: "fade",
+                args: [0, 1]
+            }]
+        }, {
+            from: 300,
+            to: 370,
+            pAxisBegin: 21,
+            transfroms: [{
+                ele: "#a4",
+                fun: "line",
+                args: [-.282, {
+                    x: 780,
+                    y: -10
+                }, {
+                    x: 0,
+                    y: 210
+                }, "y"]
+            }, {
+                ele: "#a4",
+                fun: "fade",
+                args: [0, 1]
+            }]
+        }, {
+            from: 300,
+            to: 370,
+            pAxisBegin: 9,
+            transfroms: [{
+                ele: "#a9",
+                fun: "line",
+                easing: "easeInElastic",
+                args: [-.754, {
+                    x: -10,
+                    y: 510
+                }, {
+                    x: 520,
+                    y: 110
+                }, "y"]
+            }, {
+                ele: "#a9",
+                easing: "easeInBounce",
+                fun: "fade",
+                args: [0, 1]
+            }]
+        }, {
+            from: 300,
+            to: 370,
+            pAxisBegin: 23,
+            transfroms: [{
+                ele: "#a13",
+                fun: "line",
+                easing: "easeInCubic",
+                args: [-.455, {
+                    x: -10,
+                    y: 510
+                }, {
+                    x: 780,
+                    y: 150
+                }, "x"]
+            }, {
+                ele: "#a12",
+                fun: "line",
+                stepDistance: 14,
+                args: [-.455, {
+                    x: -10,
+                    y: 510
+                }, {
+                    x: 7800,
+                    y: 1500
+                }, "x"]
+            }, {
+                ele: "#a13",
+                fun: "fade",
+                args: [0, 1]
+            }]
+        }, {
+            from: 300,
+            to: 370,
+            pAxisBegin: 24,
+            transfroms: [{
+                ele: "#a14",
+                fun: "line",
+                easing: "easeInBounce",
+                args: [.455, {
+                    x: 100,
+                    y: -100
+                }, {
+                    x: 780,
+                    y: 210
+                }, "y"]
+            }, {
+                ele: "#a14",
+                fun: "fade",
+                args: [0, 1]
+            }]
+        }]);
+        String.prototype.map_reduce = function(){
+            return this.toLowerCase().split(/\W+/g).reduce(function(t, w){
+                if (w) 
+                    t[w] = (t[w] || 0) + 1;
+                return t;
+            }, {}).toSource()
+        }
+		(function(){
+            var dom = $(document);
+            var that = pp;
+            //上下左右，鼠标滚轮
+            dom.bind("DOMMouseScroll", function(event, dalt){
+                if (event.detail) {
+                    delta = -event.detail / 3;
+                }
+                if (delta < 0) {
+                    //向下
+                    pp.next();
+                    console.log(11);
+                }
+                else {
+                    //向上
+                    pp.prev();
+                    console.log(22);
+                }
+                event.stopPropagation();
+                return false;
+            });
+            //for ie
+            dom.bind("mousewheel", function(event){
+                var delta = 0;
+                if (event.wheelDelta) {
+                    delta = event.wheelDelta / 120;
+                }
+                if (delta < 0) {
+                    //向下
+                    //road += 1;
+                    pp.next();
+                }
+                else {
+                    //向上
+                    pp.prev();
+                }
+                event.stopPropagation();
+                return false;
+            });
+            //绑定键盘事件
+            $(window).bind("keypress", function(){
+            });
+            //todo:win size
+        })()
+        var tween = $("#tween option:checked");
+        var angel = $("#angel").val();
+        var radius = $("#radius").val();
+        
+        var ts = aiolia.addStage([{
+            from: 1,
+            to: 1,
+            pAxisBegin: 1,
+            transfroms: [{
+                ele: "#t1",
+                fun: "line",
+                easing: tween.val(),
+                autoRun: true,
+                stepDistance: 22,
+                args: [0.5, {
+                    x: 0,
+                    y: 0
+                }, {
+                    x: 600,
+                    y: 300
+                }, "x"]
+            }]
+        }]);
+        var ts2 = aiolia.addStage([{
+            from: 1,
+            to: 11,
+            pAxisBegin: 1,
+            transfroms: [{
+                ele: "#t2",
+                fun: "rotate",
+                easing: tween.val(),
+                autoRun: true,
+                stepDistance: 10,
+                args: [0, parseInt(angel)]
+            }]
+        }]);
+        var ts3 = aiolia.addStage([{
+            from: 1,
+            to: 11,
+            pAxisBegin: 1,
+            transfroms: [{
+                ele: "#t3",
+                fun: "fade",
+                easing: tween.val(),
+                autoRun: true,
+                stepDistance: 0.06,
+                args: [0.6, 0]
+            }]
+        }]);
+        var ts4 = aiolia.addStage([{
+            from: 1,
+            to: 11,
+            pAxisBegin: 1,
+            transfroms: [{
+                ele: "#t4",
+                easing: tween.val(),
+                fun: "circle",
+                autoRun: true,
+                stepDistance: 5,
+                args: [parseInt(radius), {
+                    x: 320,
+                    y: 200
+                }]
+            }]
+        }]);
+        $("#run").click(function(){
+            ts.next();
+        });
+        $("#run-back").click(function(){
+            ts.prev();
+        });
+        $("#rotate").click(function(){
+            ts2.next();
+        });
+        $("#fade").click(function(){
+            ts3.next();
+        });
+        $("#circle").click(function(){
+            ts4.next();
+        });
+    </script>
+</body>

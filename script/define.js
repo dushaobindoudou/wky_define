@@ -218,6 +218,80 @@ wky_define("wky.string", function(){
     }]
 });
 
+/*
+ * 数组方法实现
+ * 没有返回值，兼容没有该方法的浏览器
+ *
+ *
+ */
+wky_define("wky", function(){
+    function arrayMethods(methods){
+        var arrProto = Array.prototype;
+        for (var name in methods) 
+            arrProto[name] = arrProto[name] || methods[name];
+    }
+    arrayMethods({
+        forEach: function(iter, context){
+            for (var i = 0; i < this.length; i++) {
+                iter.call(context, this[i], i, this);
+            }
+        },
+        reduce: function(accumlator, initVal){
+            var curr = initVal;
+            this.forEach(function(item, i, arr){
+                curr = accumlator(curr, item, i, arr);
+            });
+            return curr;
+        },
+        reduceRight: function(accumlator, initVal){
+            var curr = initVal;
+            for (var i = this.length - 1; i >= 0; i--) {
+                var item = this[i];
+                curr = accumlator(curr, item, i, this);
+            }
+            return curr;
+        },
+        map: function(func, context){
+            var len = this.length, ret = []
+            for (var i = 0; i < len; i++) {
+                if (i in this) 
+                    ret[i] = func.call(context, this[i], i, this)
+            }
+            return ret
+        },
+        filter: function(accept, context){
+            return this.reduce(function(curr, item, i, arr){
+                return accept.call(context, item, i, arr) ? curr.concat(item) : curr;
+            }, []);
+        },
+        every: function(predicate, context){
+            return this.reduce(function(curr, item, i, arr){
+                return curr && predicate.call(context, item, i, arr);
+            }, true);
+        },
+        some: function(predicate, context){
+            return this.reduce(function(curr, item, i, arr){
+                return curr || predicate.call(context, item, i, arr);
+            }, false);
+        },
+        indexOf: function(target, startFrom){
+            var len = this.length
+            for (var i = startFrom || 0; i < len; i++) {
+                if (i in this && this[i] === target) 
+                    return i;
+            }
+            return -1;
+        },
+        lastIndexOf: function(target, startFrom){
+            var len = this.length
+            for (var i = startFrom || len - 1; i >= 0; i--) 
+                if (i in this && this[i] === target) 
+                    return i;
+            return -1;
+        }
+    });
+});
+
 wky_define("wky.core", function(core){
     var extend = wky.extend;
     
@@ -227,6 +301,40 @@ wky_define("wky.core", function(core){
     
     var isString = function(obj){
         return Object.prototype.toString.call(obj) === "[object String]";
+    }
+    
+    var isUndefined = function(obj){
+        return obj === void 0;
+        //return Object.prototype.toString.call(obj) === "[object Undefined]";
+    }
+    
+    var isNumber = function(obj){
+        return Object.prototype.toString.call(obj) === "[object Number]";
+    }
+    
+    var isNumberStr = function(obj){
+        if (isNumber(obj)) {
+            return true;
+        }
+        if (isString(obj)) {
+            //todo:包含e，
+            return !!obj.match(/^[0-9]*(\.)?\d+$/);
+        }
+        return false;
+    }
+    
+    var isFunction = function(obj){
+        return Object.prototype.toString.call(obj) === "[object Function]";
+    }
+    
+    //判断是否是一个dom节点
+    var isNode = function(o){
+        return (typeof Node === "object" ? o instanceof Node : o && typeof o === "object" && typeof o.nodeType === "number" && typeof o.nodeName === "string");
+    }
+    
+    //Returns true if it is a DOM element    
+    var isElement = function(o){
+        return (typeof HTMLElement === "object" ? o instanceof HTMLElement : o && typeof o === "object" && o.nodeType === 1 && typeof o.nodeName === "string");
     }
     
     var createClass = function(proto, parent){
@@ -246,17 +354,19 @@ wky_define("wky.core", function(core){
         if (!isArray(a)) {
             return;
         }
-        fun = fun ||function(){};
-		var args = [].slice.call(arguments,1);
+        fun = fun ||
+        function(){
+        };
+        var args = [].slice.call(arguments, 1);
         if (Array.prototype.forEach) {
             Array.prototype.forEach.apply(a, args);
         }
         else {
-            var len = this.length >>> 0;
+            var len = a.length >>> 0;
             if (typeof fun != "function") {
                 throw new TypeError();
             }
-            var thisp = arguments[1];
+            var thisp = arguments[0];
             for (var i = 0; i < len; i++) {
                 if (i in thisp) {
                     fun.call(thisp, thisp[i], i, thisp);
@@ -264,6 +374,19 @@ wky_define("wky.core", function(core){
             }
         }
     }
+    
+    var each = function(ary, fn, context){
+        if (!isArray(ary) || !isFunction(fn)) {
+            return;
+        }
+        context = context || window;
+        for (var i = 0, len = ary.length; i < len; i++) {
+            if (fn.call(context, i, ary[i], ary) === false) {
+                return;
+            }
+        }
+    }
+    
     
     var forIn = function(obj, fun){
         if (!obj || !fun) {
@@ -274,7 +397,19 @@ wky_define("wky.core", function(core){
                 fun.call(obj, k, obj[k], obj);
             }
         }
-        
+    }
+    
+    //设置指定的 作用域
+    var bind = function(fn, context){
+        if (!isFunction(fn)) {
+            return fn;
+        }
+        context = context || window;
+        var args = [].slice.call(arguments, 2);
+        return function(){
+            var arg = args.concat([].slice.call(arguments));
+            return fn.apply(context, arg);
+        }
     }
     
     return [{
@@ -287,11 +422,35 @@ wky_define("wky.core", function(core){
         varName: "isArray",
         varVal: isArray
     }, {
+        varName: "isNumber",
+        varVal: isNumber
+    }, {
+        varName: "isUndefined",
+        varVal: isUndefined
+    }, {
+        varName: "isNumberStr",
+        varVal: isNumberStr
+    }, {
+        varName: "isFunction",
+        varVal: isFunction
+    }, {
+        varName: "isNode",
+        varVal: isNode
+    }, {
+        varName: "isElement",
+        varVal: isElement
+    }, {
         varName: "forEach",
         varVal: forEach
     }, {
+        varName: "each",
+        varVal: each
+    }, {
         varName: "forIn",
         varVal: forIn
+    }, {
+        varName: "bind",
+        varVal: bind
     }]
 });
 
@@ -300,7 +459,26 @@ wky_define("wky.core", function(core){
 wky_define("wky.dom", function(){
     var str = wky.string;
     var core = wky.core;
-    
+    /*
+     *  ATTRIBUTE_NODE 	2
+     CDATA_SECTION_NODE	 4
+     COMMENT_NODE	8
+     DOCUMENT_FRAGMENT_NODE	 11
+     DOCUMENT_NODE	9
+     DOCUMENT_POSITION_CONTAINED_BY	16
+     DOCUMENT_POSITION_CONTAINS	8
+     DOCUMENT_POSITION_DISCONNECTED	1
+     DOCUMENT_POSITION_FOLLOWING	4
+     DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC	32
+     DOCUMENT_POSITION_PRECEDING	2
+     DOCUMENT_TYPE_NODE	10
+     ELEMENT_NODE	1
+     ENTITY_NODE	6
+     ENTITY_REFERENCE_NODE	5
+     NOTATION_NODE	12
+     PROCESSING_INSTRUCTION_NODE	7
+     TEXT_NODE	3
+     */
     var DIRECT_ATTRIBUTE_MAP_ = {
         tabindex: "tabIndex",
         readonly: "readOnly",
@@ -410,6 +588,7 @@ wky_define("wky.dom", function(){
         varName: "setStyle",
         varVal: setStyle
     }]
+    
 });
 
 //取得或者设置光标位置
@@ -440,44 +619,208 @@ wky_define("wky.dom", function(ele){
 
 //window size
 wky_define("wky.dom", function(){
-    var getWinSize = function(){
+
+    /**
+     * 包括滚动条 border padding
+     * @method winSize
+     */
+    var winSize = function(win){
         var winH = 0, winW = 0;
+        var doc = win ? win.document : document;
         //ie 向后兼容
-        if (document.body && document.body.offsetWidth) {
+        if (doc.body && doc.body.offsetWidth) {
             winW = document.body.offsetWidth;
             winH = document.body.offsetHeight;
         }
         //ie 标准模式
-        if (document.compatMode == 'CSS1Compat' && document.documentElement && document.documentElement.offsetWidth) {
-            winW = document.documentElement.offsetWidth;
-            winH = document.documentElement.offsetHeight;
+        if (doc.compatMode == 'CSS1Compat' && doc.documentElement && doc.documentElement.offsetWidth) {
+            winW = doc.documentElement.offsetWidth;
+            winH = doc.documentElement.offsetHeight;
         }
         //标准浏览器
         if (window.innerWidth && window.innerHeight) {
             winW = window.innerWidth;
             winH = window.innerHeight;
         }
-        return [winW, winH]
+        return {
+            "width": winW,
+            "height": winH
+        }
+    }
+    
+    /**
+     * 不包括滚动条 innerSize
+     * @method screenSize
+     */
+    var screenSize = function(win){
+        var doc = win ? win.document : document;
+		var de = doc.documentElement;
+		var db = doc.body;
+		var root = doc.compatMode == "CSS1Compat" ? de : db;
+        return {
+            height: root.clientHeight || win.innerHeight,
+            width: root.clientWidth || win.innerWidth
+        };
+    };
+    
+    return [{
+        varName: "winSize",
+        varVal: winSize
+    }, {
+        varName: "screenSize",
+        varVal: screenSize
+    }]
+});
+
+//获取元素的宽高
+wky_define("wky.dom", function(dom){
+    var core = wky.core;
+    
+    //是否是element节点 
+    var isUseableElement = function(node){
+        if (!core.isNode(node) || node.nodeType !== 1) {
+            return false;
+        }
+        return true;
+    }
+    
+    //获取或者设置节点宽度
+    var width = function(node, width){
+        //必须是元素节点才行
+        if (!isUseableElement(node)) {
+            return;
+        }
+        if (!core.isUndefined(width)) {
+            if (core.isNumber(width) && width < 0) {
+                width = 0;
+            }
+            width = core.isNumberStr(width) ? width + "px" : width;
+            return dom.setStyle(node, "width", width);
+        }
+        return node.offsetWidth;
+    };
+    
+    //获取或者设置节点高度
+    var height = function(node, height){
+        if (!isUseableElement(node)) {
+            return;
+        }
+        if (!core.isUndefined(height)) {
+            if (core.isNumber(height) && height < 0) {
+                height = 0;
+            }
+            height = core.isNumberStr(height) ? height + "px" : height;
+            return dom.setStyle(node, "height", height);
+        }
+        return node.offsetHeight;
+    }
+    
+    //获取内部宽度 ，不包括滚动条，不包括border
+    var innerWidth = function(node){
+        if (!isUseableElement(node)) {
+            return;
+        }
+        return node.clientWidth;
+    }
+    
+    //获取内部高度 ，不包括滚动条，不包括border
+    var innerHeight = function(node){
+        if (!isUseableElement(node)) {
+            return;
+        }
+        return node.clientHeight;
+    }
+    
+    var html = function(node, val){
+        if (!isUseableElement(node)) {
+            return;
+        }
+        if (core.isUndefined(val)) {
+            return node.innerHTML;
+        }
+        return node.innerHTML = val;
+    }
+    
+    var offset = function(node){
+        if (!isUseableElement(node)) {
+            return;
+        }
+        var off = {
+            left: 0,
+            top: 0,
+            width: node.offsetWidth,
+            height: node.offsetHeight
+        };
+        var doc = node.ownerDocument;
+		var win = window;
+		var de = doc.documentElement;
+		var body = document.body;
+        try {
+            if (node.getBoundingClientRect) {
+                var box = node.getBoundingClientRect();
+                var body = doc.body;
+                var de = doc.documentElement;
+                off.left = box.left + (win.pageXOffset || de.scrollLeft) - (de.clientLeft || body.clientLeft || 0);
+                off.top = box.top + (win.pageYOffset || de.scrollTop) - (de.clientTop || body.clientTop || 0);
+            }
+        } 
+        catch (e) {
+        }
+        return off;
+    };
+    
+    return [{
+        varName: "width",
+        varVal: width
+    }, {
+        varName: "height",
+        varVal: height
+    }, {
+        varName: "innerHeight",
+        varVal: innerHeight
+    }, {
+        varName: "innerWidth",
+        varVal: innerWidth
+    }, {
+        varName: "html",
+        varVal: html
+    }, {
+        varName: "offset",
+        varVal: offset
+    }]
+});
+
+//当前页面的高度
+wky_define("wky.dom", function(){
+
+    /*var getDocSize = function(){
+     var D = document;
+     var height = Math.max(Math.max(D.body.scrollHeight, D.documentElement.scrollHeight), Math.max(D.body.offsetHeight, D.documentElement.offsetHeight), Math.max(D.body.clientHeight, D.documentElement.clientHeight));
+     var width = Math.max(Math.max(D.body.scrollWidth, D.documentElement.scrollWidth), Math.max(D.body.offsetWidth, D.documentElement.offsetWidth), Math.max(D.body.clientWidth, D.documentElement.clientWidth));
+     return [widht, height]
+     }*/
+    var pageSize = function(win){
+        var doc = win ? win.document : document;
+        var compatMode = doc.compatMode != "CSS1Compat";
+        var innerWidth = win.innerWidth;
+        var innerHeight = win.innerHeight;
+        var root = compatMode ? doc.body : doc.documentElement;
+        if (doc.compatMode) {
+            innerWidth = root.clientWidth;
+            innerHeight = root.clientHeight;
+        }
+        return {
+            width: Math.max(root.scrollWidth, innerWidth),
+            height: Math.max(root.scrollHeight, innerHeight)
+        };
     }
     
     return {
-        varName: "getWinSize",
-        varVal: getWinSize
+        varName: "pageSize",
+        varVal: pageSize
     }
 });
-//当前页面的高度
-wky_define("wky.dom", function(){
-    var getDocSize = function(){
-        var D = document;
-        var height = Math.max(Math.max(D.body.scrollHeight, D.documentElement.scrollHeight), Math.max(D.body.offsetHeight, D.documentElement.offsetHeight), Math.max(D.body.clientHeight, D.documentElement.clientHeight));
-        var width = Math.max(Math.max(D.body.scrollWidth, D.documentElement.scrollWidth), Math.max(D.body.offsetWidth, D.documentElement.offsetWidth), Math.max(D.body.clientWidth, D.documentElement.clientWidth));
-        return [widht, height]
-    }
-    return {
-        varName: "getDocSize",
-        varVal: getDocSize
-    }
-});
+
 //class
 wky_define("wky.dom", function(){
     var hasClass = function(ele, cls){
@@ -537,6 +880,7 @@ wky_define("wky.dom", function(){
         varName: "removeClass",
         varVal: removeClass
     }];
+    
 });
 wky_define("wky.dom", function(dom){
     /**
@@ -566,13 +910,11 @@ wky_define("wky.dom", function(dom){
      *  - JSSpec BDD framework
      *
      * Kudos to every single one of them for supporting the open web.
-	 * 
-	 * 暂时用一下 thanks kudos
+     *
+     * 暂时用一下 thanks kudos
      */
     var Sly = (function(){
-    
         var cache = {};
-        
         /**
          * Sly::constructor
          *
@@ -1849,7 +2191,604 @@ wky_define("wky.common", function(){
         varName: "deepCopy",
         varVal: deepCopy
     }]
-})
+});
+
+/*
+ * 定义事件
+ *
+ */
+wky_define("wky", function(){
+    //整个页面一个事件系统
+    var doc = document;
+    var isDomReady = false;
+    var domReady = function(callback){
+        if (!callback) {
+            return;
+        }
+        var ready = function(){
+            isDomReady = true;
+            callback();
+        }
+        var domLoaded = function(){
+            if (doc.addEventListener) {
+                doc.removeEventListener("DOMContentLoaded", domLoaded, false);
+                ready();
+            }
+            else {
+                if (doc.readyState === "complete") {
+                    doc.detachEvent("onreadystatechange", domLoaded);
+                    ready();
+                }
+            }
+        }
+        if (doc.addEventListener) {
+            doc.addEventListener("DOMContentLoaded", domLoaded, false);
+            window.addEventListener("load", ready);
+        }
+        else {
+            doc.attachEvent("onreadystatechange", domLoaded);
+            window.attachEvnet("load", ready);
+            var top = false;
+            try {
+                top = window.frameElement == null && document.documentElement;
+            } 
+            catch (e) {
+            }
+            if (top && top.doScroll) {
+                (function doScrollCheck(){
+                    if (!isDomReady) {
+                        try {
+                            top.doScroll("left");
+                        } 
+                        catch (e) {
+                            return setTimeout(doScrollCheck, 50);
+                        }
+                        ready();
+                    }
+                })();
+            }
+        }
+    }
+    return [{
+        varName: "domReady",
+        varVal: domReady
+    }];
+});
+
+//wky 的事件对象
+wky_define("wky.event", function(){
+    var core = wky.core;
+    var win = window;
+    var doc = document;
+    //是否是element节点 
+    var isUseableElement = function(node){
+        if (!core.isNode(node) || (node.nodeType !== 1 && node.nodeType !== 9)) {
+            return false;
+        }
+        return true;
+    }
+    //event object 
+    //{ele:"",click:[],mousover:""}
+    var eventList = [];
+    
+    //根据节点找到事件节点
+    var getBindedEvt = function(node){
+        var evt = null;
+        //todo:是时的终止循环
+        core.each(eventList, function(i, v){
+            if (!v) {
+                return;
+            }
+            if (v.ele === node) {
+                evt = v;
+                return false;
+            }
+        });
+        return evt;
+    }
+	//停止冒泡
+	var stopPropagation = function(evt){
+		if(!evt){
+			return;
+		}
+		if ("stopPropagation" in evt) {
+			evt.stopPropagation();
+		}
+		if("cancelBubble" in evt){
+			evt.cancelBubble = true;	
+		}
+	}
+	//阻止默认
+	var preventDefault = function(evt){
+		if("preventDefault" in evt){
+			evt.preventDefault();
+		}
+		if("returnValue" in evt){
+			evt.returnValue = false;
+		}
+	}
+    
+    //删除掉响应的函数
+    var findFnIndex = function(evtList, fn){
+        var idx = -1;
+        if (!core.isArray(evtList) || !core.isFunction(fn)) {
+            return idx;
+        }
+        //todo:用indexOf 方法
+        core.each(evtList, function(i, k){
+            if (k === fn) {
+                idx = i;
+                return false;
+            }
+        });
+        return idx;
+    }
+    
+    //绑定事件
+    var addEvent = function(node, type, fn){
+        if (doc.addEventListener) {
+            node.addEventListener(type, fn, false);
+        }
+        else {
+            node.attachEvent("on" + type, fn);
+        }
+    }
+    
+    //移除事件
+    var removeEvent = function(node, type, fn){
+        if (doc.removeEventListener) {
+            node.removeEventListener(type, fn, false);
+        }
+        else {
+            node.detachEvent("on" + type, fn);
+        }
+    }
+    
+    //添加到列表
+    var addToList = function(node, type, fn, execed){
+        if (!isUseableElement(node) || !type) {
+            return;
+        }
+        //todo:应该切入进去，统一组织event对象
+        var evtObj = getBindedEvt(node);
+        if (!evtObj) {
+            evtObj = {
+                ele: node,
+                baseFn: null
+            }
+            evtObj[type] = [fn];
+            eventList.push(evtObj);
+            //绑定事件
+            //addEvent(node, type, evtObj.baseFn);
+        }
+        else {
+            if (type in evtObj) {
+                evtObj[type].push(fn);
+                //已经绑定了
+                return;
+            }
+            else {
+                evtObj[type] = [fn];
+            }
+            //绑定事件
+            //addEvent(node, type, evtObj.baseFn);
+        }
+        evtObj.baseFn = core.bind(function(){
+            var evLs = evtObj[type] || [];
+            var args = [].slice.call(arguments, 0);
+            var that = this;
+			var isStopPropagation = false;
+            core.each(evLs, function(i,v){
+                if (core.isFunction(v)) {
+                    if(v.apply(that, args) === false){
+						isStopPropagation = true;
+					};
+				}
+            });
+            if (core.isFunction(execed)) {
+                execed.call();
+            }
+			if(isStopPropagation){
+				stopPropagation.apply(that,args);
+				preventDefault.apply(that,args);
+				return false;
+			}
+        }, node);
+        //绑定事件
+        addEvent(node, type, evtObj.baseFn);
+    }
+    //从列表中移除
+    var removeFromList = function(node, type, fn){
+        if (!isUseableElement(node) || !type) {
+            return;
+        }
+        //todo:应该切入进去，统一组织event对象
+        var evtObj = getBindedEvt(node);
+        if (!evtObj) {
+            return;
+        }
+        else {
+            if (type in evtObj) {
+                if (!core.isFunction(fn)) {
+                    evtObj[type] = [];
+                    removeEvent(node, type, evtObj.baseFn);
+                    return;
+                }
+                var idx = findFnIndex(evtObj[type], fn);
+                if (~ idx) {
+                    evtObj[type].splice(idx, 1);
+                }
+                if (!evtObj[type].length) {
+                    //移除对象
+                    removeEvent(node, type, evtObj.baseFn);
+                }
+            }
+            else {
+                //evtObj[type] = [fn];
+            }
+        }
+    }
+    //todo:process
+    var add = function(node, type, fn){
+        addToList(node, type, fn);
+    }
+    //todo:移除事件
+    var remove = function(node, type, fn){
+        removeFromList(node, type, fn);
+    }
+    //只添加一次
+    var addOnce = function(node, type, fn){
+        var execdCallback = function(){
+            remove(node, type, fn);
+        }
+        addToList(node, type, fn, execdCallback);
+    }
+    //移除当前对象上所有的事件
+    var removeAll = function(node){
+        var evtObj = getBindedEvt(node);
+        core.forIn(evtObj, function(evtType, evtList){
+            if (evtType == "ele") {
+                return;
+            }
+            remove(node, evtType);
+        });
+    }
+    return [{
+        varName: "add",
+        varVal: add
+    }, {
+        varName: "remove",
+        varVal: remove
+    }, {
+        varName: "addOnce",
+        varVal: addOnce
+    }, {
+        varName: "removeAll",
+        varVal: removeAll
+    }];
+});
+
+/*
+ *
+ * wky 缓动处理
+ *
+ *
+ *
+ */
+wky_define("wky.tween", function(){
+
+    var tween = {
+        easeInQuad: function(pos){
+            return Math.pow(pos, 2);
+        },
+        easeOutQuad: function(pos){
+            return -(Math.pow((pos - 1), 2) - 1);
+        },
+        easeInOutQuad: function(pos){
+            if ((pos /= 0.5) < 1) 
+                return 0.5 * Math.pow(pos, 2);
+            return -0.5 * ((pos -= 2) * pos - 2);
+        },
+        easeInCubic: function(pos){
+            return Math.pow(pos, 3);
+        },
+        easeOutCubic: function(pos){
+            return (Math.pow((pos - 1), 3) + 1);
+        },
+        easeInOutCubic: function(pos){
+            if ((pos /= 0.5) < 1) 
+                return 0.5 * Math.pow(pos, 3);
+            return 0.5 * (Math.pow((pos - 2), 3) + 2);
+        },
+        easeInQuart: function(pos){
+            return Math.pow(pos, 4);
+        },
+        easeOutQuart: function(pos){
+            return -(Math.pow((pos - 1), 4) - 1)
+        },
+        easeInOutQuart: function(pos){
+            if ((pos /= 0.5) < 1) 
+                return 0.5 * Math.pow(pos, 4);
+            return -0.5 * ((pos -= 2) * Math.pow(pos, 3) - 2);
+        },
+        easeInQuint: function(pos){
+            return Math.pow(pos, 5);
+        },
+        easeOutQuint: function(pos){
+            return (Math.pow((pos - 1), 5) + 1);
+        },
+        easeInOutQuint: function(pos){
+            if ((pos /= 0.5) < 1) 
+                return 0.5 * Math.pow(pos, 5);
+            return 0.5 * (Math.pow((pos - 2), 5) + 2);
+        },
+        easeInSine: function(pos){
+            return -Math.cos(pos * (Math.PI / 2)) + 1;
+        },
+        easeOutSine: function(pos){
+            return Math.sin(pos * (Math.PI / 2));
+        },
+        easeInOutSine: function(pos){
+            return (-.5 * (Math.cos(Math.PI * pos) - 1));
+        },
+        easeInExpo: function(pos){
+            return (pos == 0) ? 0 : Math.pow(2, 10 * (pos - 1));
+        },
+        easeOutExpo: function(pos){
+            return (pos == 1) ? 1 : -Math.pow(2, -10 * pos) + 1;
+        },
+        easeInOutExpo: function(pos){
+            if (pos == 0) 
+                return 0;
+            if (pos == 1) 
+                return 1;
+            if ((pos /= 0.5) < 1) 
+                return 0.5 * Math.pow(2, 10 * (pos - 1));
+            return 0.5 * (-Math.pow(2, -10 * --pos) + 2);
+        },
+        easeInCirc: function(pos){
+            return -(Math.sqrt(1 - (pos * pos)) - 1);
+        },
+        easeOutCirc: function(pos){
+            return Math.sqrt(1 - Math.pow((pos - 1), 2))
+        },
+        easeInOutCirc: function(pos){
+            if ((pos /= 0.5) < 1) 
+                return -0.5 * (Math.sqrt(1 - pos * pos) - 1);
+            return 0.5 * (Math.sqrt(1 - (pos -= 2) * pos) + 1);
+        },
+        easeOutBounce: function(pos){
+            if ((pos) < (1 / 2.75)) {
+                return (7.5625 * pos * pos);
+            }
+            else 
+                if (pos < (2 / 2.75)) {
+                    return (7.5625 * (pos -= (1.5 / 2.75)) * pos + .75);
+                }
+                else 
+                    if (pos < (2.5 / 2.75)) {
+                        return (7.5625 * (pos -= (2.25 / 2.75)) * pos + .9375);
+                    }
+                    else {
+                        return (7.5625 * (pos -= (2.625 / 2.75)) * pos + .984375);
+                    }
+        },
+        easeInBack: function(pos){
+            var s = 1.70158;
+            return (pos) * pos * ((s + 1) * pos - s);
+        },
+        easeOutBack: function(pos){
+            var s = 1.70158;
+            return (pos = pos - 1) * pos * ((s + 1) * pos + s) + 1;
+        },
+        easeInOutBack: function(pos){
+            var s = 1.70158;
+            if ((pos /= 0.5) < 1) 
+                return 0.5 * (pos * pos * (((s *= (1.525)) + 1) * pos - s));
+            return 0.5 * ((pos -= 2) * pos * (((s *= (1.525)) + 1) * pos + s) + 2);
+        },
+        elastic: function(pos){
+            return -1 * Math.pow(4, -8 * pos) * Math.sin((pos * 6 - 1) * (2 * Math.PI) / 2) + 1;
+        },
+        swingFromTo: function(pos){
+            var s = 1.70158;
+            return ((pos /= 0.5) < 1) ? 0.5 * (pos * pos * (((s *= (1.525)) + 1) * pos - s)) : 0.5 * ((pos -= 2) * pos * (((s *= (1.525)) + 1) * pos + s) + 2);
+        },
+        swingFrom: function(pos){
+            var s = 1.70158;
+            return pos * pos * ((s + 1) * pos - s);
+        },
+        swingTo: function(pos){
+            var s = 1.70158;
+            return (pos -= 1) * pos * ((s + 1) * pos + s) + 1;
+        },
+        bounce: function(pos){
+            if (pos < (1 / 2.75)) {
+                return (7.5625 * pos * pos);
+            }
+            else 
+                if (pos < (2 / 2.75)) {
+                    return (7.5625 * (pos -= (1.5 / 2.75)) * pos + .75);
+                }
+                else 
+                    if (pos < (2.5 / 2.75)) {
+                        return (7.5625 * (pos -= (2.25 / 2.75)) * pos + .9375);
+                    }
+                    else {
+                        return (7.5625 * (pos -= (2.625 / 2.75)) * pos + .984375);
+                    }
+        },
+        bouncePast: function(pos){
+            if (pos < (1 / 2.75)) {
+                return (7.5625 * pos * pos);
+            }
+            else 
+                if (pos < (2 / 2.75)) {
+                    return 2 - (7.5625 * (pos -= (1.5 / 2.75)) * pos + .75);
+                }
+                else 
+                    if (pos < (2.5 / 2.75)) {
+                        return 2 - (7.5625 * (pos -= (2.25 / 2.75)) * pos + .9375);
+                    }
+                    else {
+                        return 2 - (7.5625 * (pos -= (2.625 / 2.75)) * pos + .984375);
+                    }
+        },
+        easeFromTo: function(pos){
+            if ((pos /= 0.5) < 1) 
+                return 0.5 * Math.pow(pos, 4);
+            return -0.5 * ((pos -= 2) * Math.pow(pos, 3) - 2);
+        },
+        easeFrom: function(pos){
+            return Math.pow(pos, 4);
+        },
+        easeTo: function(pos){
+            return Math.pow(pos, 0.25);
+        },
+        linear: function(pos){
+            return pos
+        },
+        sinusoidal: function(pos){
+            return (-Math.cos(pos * Math.PI) / 2) + 0.5;
+        },
+        reverse: function(pos){
+            return 1 - pos;
+        },
+        mirror: function(pos, transition){
+            transition = transition || tween.sinusoidal;
+            if (pos < 0.5) 
+                return transition(pos * 2);
+            else 
+                return transition(1 - (pos - 0.5) * 2);
+        },
+        flicker: function(pos){
+            var pos = pos + (Math.random() - 0.5) / 5;
+            return tween.sinusoidal(pos < 0 ? 0 : pos > 1 ? 1 : pos);
+        },
+        wobble: function(pos){
+            return (-Math.cos(pos * Math.PI * (9 * pos)) / 2) + 0.5;
+        },
+        pulse: function(pos, pulses){
+            return (-Math.cos((pos * ((pulses || 5) - .5) * 2) * Math.PI) / 2) + .5;
+        },
+        blink: function(pos, blinks){
+            return Math.round(pos * (blinks || 5)) % 2;
+        },
+        spring: function(pos){
+            return 1 - (Math.cos(pos * 4.5 * Math.PI) * Math.exp(-pos * 6));
+        },
+        none: function(pos){
+            return 0
+        },
+        full: function(pos){
+            return 1
+        }
+    };
+    
+    var core = wky.core;
+    var animatFnList = [];
+    var timer = null;
+    
+    var circleLoop = function(interval){
+        interval = interval || 200;
+        if (!animatFnList.length) {
+            endTimer();
+            return;
+        }
+        if (animatFnList.length) {
+            core.each(animatFnList, function(i, k){
+                if (core.isFunction(k)) {
+                    k();
+                }
+            });
+        }
+        //fn();
+        timer = setTimeout(function(){
+            circleLoop(interval);
+        }, interval);
+    }
+    
+    var timerInterval = function(fn, interval){
+        animatFnList.push(fn);
+        circleLoop(interval);
+    }
+    //找到函数对应的位置
+    var findFnIndex = function(anFnList,fn){
+        var idx = -1;
+        if (!core.isArray(anFnList) || !core.isFunction(fn)) {
+            return idx;
+        }
+        //todo:用indexOf 方法
+        core.each(anFnList, function(i, k){
+            if (k === fn) {
+                idx = i;
+                return false;
+            }
+        });
+        return idx;
+    }
+    
+    var stopIntervalTimer = function(anFn){
+        if (!core.isFunction(anFn)) {
+            return;
+        }
+        var idx = findFnIndex(animatFnList,anFn);
+		if(idx > -1){
+			animatFnList.splice(idx,1);
+		}
+    }
+    
+    //结束
+    var endTimer = function(){
+        if (timer) {
+            clearTimeout(timer);
+        }
+        timer = null;
+    }
+    
+    
+    var animate = function(option){
+        option = option || {};
+        var duration = option.duration || 1000;
+        var change = option.change;
+        var end = option.end;
+        var start = option.start;
+        var easing = option.easing || "linear";
+        var step = option.step ||
+        function(){
+        };
+        var complete = option.complete ||
+        function(){
+        };
+        var init = 0;
+        //如果没有起始点的话就结束掉，如果没有结束点的话，或者改变量的话就结束掉
+        if (core.isUndefined(start) || (core.isUndefined(change) && core.isUndefined(end))) {
+            return;
+        }
+        if (core.isUndefined(change)) {
+            change = end - start;
+        }
+        var anFn = function(){
+            var delta = tween[easing](init / duration);
+            var clVal = start + (delta * change);
+            //console.log(delta + ":" + clVal);
+            step(delta, clVal, change, change);
+            if (init >= duration) {
+                stopIntervalTimer(anFn);
+                complete();
+                return;
+            }
+            init += 5;
+        }
+        timerInterval(anFn, 10);
+    }
+    return {
+        varName: "animate",
+        varVal: animate
+    }
+});
+
+
 
 wky_define("wky.cookie", function(){
 

@@ -1,0 +1,1488 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>桌面显示方式</title>
+        <link href="css/desk.css" type="text/css" charset="utf-8" rel="stylesheet" />
+        <script type="text/javascript" src="script/define.js"></script>
+        <script type="text/javascript" src="script/jquery.min.js"></script>
+        <script type="text/javascript" src="script/config/config.js"></script>
+        <script type="text/javascript" src="script/jquery.easing.js"></script>
+        <script type="text/javascript" src="script/canvasLib.js"></script>
+        <script type="text/javascript" src="script/roateImg.js"></script>
+        <script type="text/javascript" src="script/popup.js"></script>
+        <script type="text/javascript" src="script/slider.js"></script>
+        <script type="text/javascript" src="script/circle.js"></script>
+		<script type="text/javascript" src="script/clickDespatcher.js"></script>ip
+        <script type="text/javascript" src="script/template/tp_homePage.js"></script>
+        <style type="text/css">
+            .sharp-perspective {
+                -webkit-perspective: 300px;
+                -moz-perspective: 300px;
+                -o-perspective: 300px;
+                perspective: 300px;
+            }
+            
+            .sharp-perspective .ladder-sharp {
+                -webkit-transform: rotateX(135deg);
+                -moz-transform: rotateX(135deg);
+                -o-transform: rotateX(135deg);
+                transform: rotateX(135deg);
+            }
+            
+            .clear-perspective {
+                -webkit-transform: rotateX(225deg);
+                -moz-transform: rotateX(135deg);
+                -o-transform: rotateX(225deg);
+                transform: rotateX(135deg);
+            }
+        </style>
+    </head>
+    <body>
+        <div class="head">
+        </div>
+        <div class="setting-pannel">
+        </div>
+        <div class="page-list-pannel">
+        </div>
+        <div class="news-pannel">
+        </div>
+        <div class="main-content">
+        </div>
+        <div class="popup-box">
+            <div id="video" style="display:none; width:500px; height:400px;">
+                <div id="video-player" style="width:500px; height:400px;">
+                </div>
+            </div>
+        </div>
+    </body>
+    <script type="text/javascript">
+        
+        var DESKCONFIG = {
+            head: {
+                width: 0.6,//相对窗口的宽 60%
+                height: 0.1,//相对窗口的高 20%
+                opacity: 0.6
+            },
+            settingPannel: {
+                width: 0.04,//相对窗口的宽  20%
+                height: 0.8,//相对窗口的高  50%
+                opacity: 0.6
+            },
+            pageListPannel: {
+                width: 0.1,//相对窗口的宽  20%
+                height: 0.8,//相对窗口的高  50%
+                opacity: 0.8
+            },
+            newsPannel: {
+                width: 0.6,//相对窗口的宽 60%
+                height: 0.1,//相对窗口的高 20%
+                opacity: 0.6
+            }
+        }
+        
+        var searchTempData = wky.template.homePage.searchTemp;
+        
+        $(document).ready(function(){
+            var that = $(this);
+            var body = that.find("body");
+            
+            var pannels = {
+                head: body.find("div.head"),
+                setting: body.find("div.setting-pannel"),
+                pageList: body.find("div.page-list-pannel"),
+                news: body.find("div.news-pannel"),
+                mainContent: body.find("div.main-content")
+            }
+            
+            var clientSize = {
+                width: $(window).width(),
+                height: $(window).height()
+            };
+            
+            var pannelPageData = {
+                homePage: {
+                    currentPage: 0,
+                    totalPage: 0
+                },
+                articlePage: {
+                    currentPage: 0,
+                    totalPage: 0
+                },
+                photoPage: {
+                    currentPage: 0,
+                    totalPage: 0
+                },
+                videoPage: {
+                    currentPage: 0,
+                    totalPage: 0
+                },
+                musicPage: {
+                    currentPage: 0,
+                    totalPage: 0
+                },
+                aboutMePage: {
+                    currentPage: 0,
+                    totalPage: 0
+                },
+                feedPage: {
+                    currentPage: 0,
+                    totalPage: 0
+                }
+            };
+            
+            var currentPannelPage = pannelPageData.homePage;
+            var currentPannel = null;
+            var pupupCollection;
+            var headData = {
+                outer: {
+                    css: {
+                        width: pannels.head.width(),
+                        height: pannels.head.height(),
+                        top: 0,
+                        overflow: "hidden"
+                    }
+                },
+                content: {
+                    css: {
+                        position: "absolute",
+                        background: "#FFFFFF",
+                        opacity: DESKCONFIG.head.opacity
+                    }
+                },
+                headNav: {
+                    ele: null,
+                    navList: {
+                        createdEle: {},
+                        "home": function(){
+                            currentPannelPage = pannelPageData.homePage;
+                            var data = this.getNavData("home", "home.png", function(at){
+                                homePage(new Array(30));
+                            });
+                            console.log(data);
+                            //updatePage();
+                            return data;
+                        },
+                        "article": function(){
+                            currentPannelPage = pannelPageData.articlePage;
+                            var data = this.getNavData("article", "article.jpg", function(at){
+                                articlePage(new Array(30));
+                                //currentPannelPage.totalPage++;
+                            });
+                            //updatePage();
+                            return data;
+                        },
+                        "video": function(){
+                            currentPannelPage = pannelPageData.videoPage;
+                            var data = this.getNavData("video", "video.jpg", function(at){
+                                videoPage(new Array(130));
+                                //currentPannelPage.totalPage++;
+                            });
+                            //updatePage();
+                            return data;
+                        },
+                        "photo": function(){
+                            currentPannelPage = pannelPageData.photoPage;
+                            var data = this.getNavData("photo", "photo.jpg", function(at){
+                                articlePage(new Array(30));
+                                //currentPannelPage.totalPage++;
+                            
+                            });
+                            //updatePage();
+                            return data;
+                        },
+                        "music": function(){
+                            currentPannelPage = pannelPageData.musicPage;
+                            
+                            var data = this.getNavData("music", "music.jpg", function(at){
+                                articlePage(new Array(30));
+                                //currentPannelPage.totalPage++;
+                            });
+                            //updatePage();
+                            return data;
+                        },
+                        "about-me": function(){
+                            currentPannelPage = pannelPageData.aboutMePage;
+                            var data = this.getNavData("about-me", "about-me.jpg", function(at){
+                                articlePage(new Array(30));
+                                //currentPannelPage.total++;
+                            });
+                            //updatePage();
+                            return data;
+                        },
+                        "feed": function(){
+                            currentPannelPage = pannelPageData.feedPage;
+                            var data = this.getNavData("feed", "feed.png", function(at){
+                                articlePage(new Array(30));
+                                //currentPannelPage.totalPage++;
+                            });
+                            //updatePage();
+                            return data;
+                        },
+                        getNavData: function(className, bgImg, callback, isNeedHeader){//设置当前正在显示的窗体，返回窗体句柄
+                            var at = pannels.outerMain.find(".content-" + className);//显示当前位置
+                            pannels.mianInner.ele = at.find("div." + className);//
+                            if (this.createdEle[className]) {
+                                return {
+                                    ele: this.createdEle[className]
+                                };
+                            }
+                            var pannelCnt = null;
+                            var header = null;
+                            var cnt = null;
+                            if (!at.find("." + className).length) {
+                                //增加一个特殊的头样式
+                                pannelCnt = $("<div></div>");//添加样式 
+                                pannelCnt.css({
+                                    width: clientSize.width,
+                                    height: "auto",
+                                    position: "absolute",
+                                });
+                                header = $("<div></div>").addClass("head-" + className).css({
+                                    position: "relative",
+                                    width: clientSize.width,
+                                    height: clientSize.height,
+                                    "float": "left"
+                                });
+                                cnt = $("<div></div>").addClass(className);
+                                cnt.css({
+                                    width: clientSize.width,
+                                    height: "auto",
+                                    position: "relateive",
+                                    background: "url(images/" + bgImg + ")",
+                                    "float": "left"
+                                });
+                                pannelCnt.append(header).append(cnt);
+                                at.append(pannelCnt);
+                                pannels.mianInner.ele = pannelCnt;
+                                pannels.mianInner.modulName = className;
+                                //create ele
+                                callback && callback.call(this, at)
+                                
+                            }
+                            //保留引用
+                            this.createdEle[className] = at;
+                            return {
+                                ele: at
+                            }
+                        }
+                    }
+                }
+            };
+            headData.outer.css.left = parseInt((clientSize.width - headData.outer.css.width) / 2);
+            headData.content.css.width = parseInt(headData.outer.css.width - headData.outer.css.height * 2);
+            headData.content.css.height = headData.outer.css.height;
+            headData.content.css.left = headData.outer.css.height;
+            
+            var settingPannelData = {
+                outer: {
+                    css: {
+                        width: pannels.setting.width(),
+                        height: pannels.setting.height(),
+                        left: 0,
+                        overflow: "hidden"
+                    }
+                },
+                content: {
+                    css: {
+                        position: "absolute",
+                        background: "#FFFFFF",
+                        opacity: DESKCONFIG.settingPannel.opacity
+                    }
+                },
+                settingNav: {
+                    settingData: {
+                        category: function(coo){
+                            var ht = '<div class="setting-add-cricle"><div class="circle-setting-title"><span>&nbsp;设置分类</span><span class="close">关闭<span></div><div class="circle-setting-content">' +
+                            '<div class="circle-info"><ul><li>类别名称：<input class="nav-name" type="text" /></li></ul></div>' +
+                            '<div class="controls"><input class="controls-btn" act="add" type="button" value="添加分类" /><input class="controls-btn" type="button" value="编辑分类" /></div>' +
+                            '</div></div>';
+                            var t = $(ht);
+                            var coo1 = deskPopup.addPopup({
+                                css: {
+                                    width: "500px",
+                                    height: "260px",
+                                    color: "#ffffff",
+                                    left: (clientSize.width - 400) / 2
+                                },
+                                isKeepHold: true,
+                                animateType: "top-bottom",
+                                content: t,
+                                initEvent: function(){
+                                    var sel = this.ele.dvPannel;
+                                    //close
+                                    sel.find(".close").click(function(){
+                                        coo1.releaseHold();
+                                    });
+                                    
+                                    sel.find("input[act=add]").click(function(){
+                                        var getABlockCircle = function(cn){
+                                            var cl = circle.add({
+                                                radius: 131 - 16,
+                                                stepLen: 32,
+                                                relativeX: 262 / 2 - 16,
+                                                relativeY: 262 / 2 - 16,
+												circleName:cn
+                                            });
+                                            return cl;
+                                        }
+										var catoryName = sel.find("input.nav-name").val();
+										var ccle = getABlockCircle(catoryName);
+										//update inxNav
+                                        searchTempData.navSlider.addContent(ccle.circleEle.circle);										
+										searchTempData.idxNav.setCount(searchTempData.navSlider.totalStep);										
+										coo1.releaseHold();
+                                    });
+									
+									
+                                }
+                            });
+                            coo.releaseHold();                            
+                        }
+                    },
+                    "setting": function(){
+                        var settNav = this;
+                        //生成setting框
+                        var ht = '<div class="setting-content"><ul><li act="category"><span class="control">添加一个分类</span></li><li><span class="control">sdf</span></li><li><span class="control">sdf</span></li><li><span class="control">sdf</span></li><li><span class="control">sdf</span></li></ul></div>';
+                        var t = $(ht);
+                        //点击用户设置,创建一个弹出框,一个设置容器
+                        var coo = deskPopup.addPopup({
+                            css: {
+                                width: "1060px",
+                                height: "220px",
+                                color: "#ffffff",
+                                top: (clientSize.height - 300) / 2
+                            },
+                            isKeepHold: true,
+                            animateType: "left-right",
+                            content: t
+                        });
+                        
+                        t.delegate("li", "click", function(){
+                            var that = $(this);
+                            var setWhat = that.attr("act");
+                            if (!setWhat) {
+                                return;
+                            }
+                            settNav.settingData[setWhat].apply(settNav, [coo, that]);
+                        });
+                        
+                    },
+                    "message": function(){
+                    
+                    
+                    },
+                    "comment": function(){
+                    
+                    },
+                    "calendar": function(){
+                    
+                    
+                    },
+                    "chat": function(){
+                    
+                    
+                    },
+                    "user": function(){
+                    
+                    
+                    }
+                    
+                }
+            };
+            
+            settingPannelData.outer.css.top = parseInt((clientSize.height - settingPannelData.outer.css.height) / 2);
+            settingPannelData.content.css.width = settingPannelData.outer.css.width;
+            settingPannelData.content.css.height = parseInt(settingPannelData.outer.css.height - settingPannelData.outer.css.width * 2);
+            settingPannelData.content.css.top = settingPannelData.content.css.width;
+            
+            var pageListPannelData = {
+                outer: {
+                    css: {
+                        width: pannels.pageList.width(),
+                        height: clientSize.height,
+                        right: 0,
+                        overflow: "hidden"
+                    }
+                },
+                content: {
+                    css: {
+                        position: "absolute",
+                        background: "#FFFFFF",
+                        opacity: DESKCONFIG.pageListPannel.opacity
+                    }
+                },
+                pagePannel: {
+                    ele: ""
+                },
+                pageIdxPannel: {
+                    ele: ""
+                },
+                currentPageRange: {
+                    from: 0,
+                    to: 10
+                }
+            };
+            pageListPannelData.outer.css.top = parseInt((clientSize.height - pageListPannelData.outer.css.height) / 2);
+            pageListPannelData.content.css.width = pageListPannelData.outer.css.width;
+            pageListPannelData.content.css.height = parseInt(pageListPannelData.outer.css.height - pageListPannelData.outer.css.width * 2);
+            pageListPannelData.content.css.top = pageListPannelData.content.css.width;
+            
+            
+            var newsPannelData = {
+                outer: {
+                    css: {
+                        width: pannels.news.width(),
+                        height: pannels.news.height(),
+                        bottom: 0,
+                        overflow: "hidden"
+                    }
+                },
+                content: {
+                    css: {
+                        position: "absolute",
+                        background: "#FFFFFF",
+                        opacity: DESKCONFIG.newsPannel.opacity
+                    }
+                }
+            };
+            
+            newsPannelData.outer.css.left = parseInt((clientSize.width - newsPannelData.outer.css.width) / 2);
+            newsPannelData.content.css.width = parseInt(newsPannelData.outer.css.width - newsPannelData.outer.css.height * 2);
+            newsPannelData.content.css.height = newsPannelData.outer.css.height;
+            newsPannelData.content.css.left = newsPannelData.outer.css.height;
+            
+            var drawCorner = function(ele, direction){
+                var leftCorner = new cjp.Stage(ele);
+                var pen = new cjp.Pen(leftCorner, {
+                    color: "rgba(255,255,255,0)"
+                });
+                var zp = null;
+                var fp = null;
+                var tp = null;
+                //var tr = new cjp.Pointer(ele.width, ele.height);
+                pen.beginDraw();
+                switch (direction) {
+                    case "top-left":
+                        zp = new cjp.Pointer(ele.width, 0);
+                        fp = new cjp.Pointer(ele.width, ele.height);
+                        tp = new cjp.Pointer(0, 0);
+                        break;
+                    case "top-right":
+                        zp = new cjp.Pointer(0, 0);
+                        fp = new cjp.Pointer(ele.width, 0);
+                        tp = new cjp.Pointer(0, ele.height);
+                        break;
+                    case "bottom-left":
+                        zp = new cjp.Pointer(0, 0);
+                        fp = new cjp.Pointer(0, ele.height);
+                        tp = new cjp.Pointer(ele.width, ele.height);
+                        break;
+                    case "bottom-right":
+                        zp = new cjp.Pointer(0, ele.height);
+                        fp = new cjp.Pointer(ele.width, ele.height);
+                        tp = new cjp.Pointer(ele.width, 0);
+                        break;
+                    default:
+                        return;        }
+                pen.moveNewPointer(zp);
+                pen.draw(zp, fp);
+                pen.draw(fp, tp);
+                pen.draw(tp, zp);
+                pen.fillDrawedArea({
+                    color: "rgba(255,255,255,0.6)"
+                });
+                pen.endDraw();
+            }
+            
+            var drawArrows = function(ele, direction){
+                var leftCorner = new cjp.Stage(ele);
+                var pen = new cjp.Pen(leftCorner, {
+                    color: "rgba(255,255,255,0)"
+                });
+                var zp = null;
+                var fp = null;
+                var tp = null;
+                //var tr = new cjp.Pointer(ele.width, ele.height);
+                pen.beginDraw();
+                switch (direction) {
+                    case "top":
+                        zp = new cjp.Pointer(0, ele.height);
+                        fp = new cjp.Pointer(ele.width / 2, ele.height / 2);
+                        tp = new cjp.Pointer(ele.width, ele.height);
+                        break;
+                    case "right":
+                        zp = new cjp.Pointer(0, 0);
+                        fp = new cjp.Pointer(ele.width / 2, ele.height / 2);
+                        tp = new cjp.Pointer(0, ele.height);
+                        break;
+                    case "left":
+                        zp = new cjp.Pointer(ele.width, 0);
+                        fp = new cjp.Pointer(ele.width / 2, ele.height / 2);
+                        tp = new cjp.Pointer(ele.width, ele.height);
+                        break;
+                    case "bottom":
+                        zp = new cjp.Pointer(0, 0);
+                        fp = new cjp.Pointer(ele.width / 2, ele.height / 2);
+                        tp = new cjp.Pointer(ele.width, 0);
+                        break;
+                    default:
+                        return;        }
+                pen.moveNewPointer(zp);
+                pen.draw(zp, fp);
+                pen.draw(fp, tp);
+                pen.draw(tp, zp);
+                pen.fillDrawedArea({
+                    color: "rgba(255,255,255,0.6)"
+                });
+                pen.endDraw();
+            }
+            
+            var fillPannelCnt = function(ele, css, beforeDir, afterDir){
+                var pannel = $('<ul style="position:relative; bottom:0; left:0;"></ul>');
+                var beforeCorner = $('<li style="position:absolute;"></li>');
+                var cnt = $("<li></li>");
+                var afterCorner = $('<li style="position:absolute;"></li>');
+                //设置样式
+                beforeCorner.width(css.height).height(css.height).css("left", 0);
+                afterCorner.width(css.height).height(css.height).css("right", 0);
+                //设置角度
+                var beforeCnCvs = $("<canvas></canvas>").width(css.height).height(css.height);
+                var afterCnCvs = $("<canvas></canvas>").width(css.height).height(css.height);
+                drawCorner(beforeCnCvs[0], beforeDir);
+                drawCorner(afterCnCvs[0], afterDir);
+                beforeCorner.append(beforeCnCvs);
+                afterCorner.append(afterCnCvs);
+                headData.headNav.ele = $('<ul class="navgator"></ul>');
+                headData.headNav.ele.html('<li class="home" title="主页" ></li><li class="article" title="文章"></li><li class="video" title="视频"></li><li class="photo" title="相册"></li><li class="music" title="音乐"></li><li class="about-me" title="关于我"></li><li class="feed" title="rss"></li>');
+                cnt.css(css).append(headData.headNav.ele);
+                pannel.append(beforeCorner).append(cnt).append(afterCorner);
+                ele.append(pannel);
+            }
+            
+            var fillNewsPannelCnt = function(ele, css, beforeDir, afterDir){
+                var pannel = $('<ul style="position:absolute; bottom:0; left:0;"></ul>');
+                var beforeCorner = $('<li style="position:absolute;"></li>');
+                var cnt = $("<li><span></span></li>");
+                var afterCorner = $('<li style="position:absolute;"></li>');
+                //设置样式
+                pannel.width(css.width + css.height * 2);
+                pannel.height(css.height);
+                beforeCorner.width(css.height).height(css.height).css("left", 0);
+                afterCorner.width(css.height).height(css.height).css("right", 0);
+                //设置角度
+                var beforeCnCvs = $("<canvas></canvas>").width(css.height).height(css.height);
+                var afterCnCvs = $("<canvas></canvas>").width(css.height).height(css.height);
+                drawCorner(beforeCnCvs[0], beforeDir);
+                drawCorner(afterCnCvs[0], afterDir);
+                beforeCorner.append(beforeCnCvs);
+                afterCorner.append(afterCnCvs);
+                cnt.css(css);
+                pannel.append(beforeCorner).append(cnt).append(afterCorner);
+                ele.append(pannel);
+            }
+            
+            var fillSettingPannlCnt = function(ele, css, beforeDir, afterDir){
+                var pannel = $('<ul style="position:absolute; left:0; top:0"></ul>');
+                var beforeCorner = $('<li style="position:absolute;"></li>');
+                var cnt = $("<li></li>");
+                var afterCorner = $('<li style="position:absolute;"></li>');
+                //设置样式
+                pannel.width(css.width);
+                pannel.height(parseInt(css.height) + css.width * 2);
+                beforeCorner.width(css.width).height(css.width).css("top", 0);
+                afterCorner.width(css.width).height(css.width).css("bottom", 0);
+                //设置角度
+                var beforeCnCvs = $("<canvas></canvas>").width(css.width).height(css.width);
+                var afterCnCvs = $("<canvas></canvas>").width(css.width).height(css.width);
+                drawCorner(beforeCnCvs[0], beforeDir);
+                drawCorner(afterCnCvs[0], afterDir);
+                beforeCorner.append(beforeCnCvs);
+                afterCorner.append(afterCnCvs);
+                var settingsNav = $('<ul class="tools"></ul>');
+                settingsNav.html('<li class="user" title="个人资料"></li><li class="chat" title="聊天"></li><li class="calendar" title="日程安排"></li><li class="comment" title="评论"></li><li class="message" title="留言"></li><li class="setting" title="设置"></li>');
+                cnt.css(css).append(settingsNav);
+                pannel.append(beforeCorner).append(cnt).append(afterCorner);
+                ele.append(pannel);
+            }
+            
+            
+            /***    更新页面索引    ***/
+            var updatePageIdx = function(){
+                //var tp = mainContentData.totalPage;
+                if (!currentPannelPage) {
+                    return;
+                }
+                var tp = currentPannelPage.totalPage;
+                pageListPannelData.pageIdxPannel.ele.html("");
+                var i = 0;
+                var topRange = Math.ceil(tp / 10)
+                while (i < topRange) {
+                    var li = $("<li></li>");
+                    var from = (i) * 10;
+                    var to = (i + 1) * 10
+                    var dv = $('<div class="page-idx-cnt" from-page-idx="' + from + '" to-page-idx="' + to + '" ></div>').css({
+                        background: "black",
+                        opacity: "0.8",
+                        height: 30,
+                        width: 120,
+                        textAlign: "center",
+                        padding: "9px 0 0 0"
+                    });
+                    pageListPannelData.pageIdxPannel.ele.append(li.append(dv.html("第" + from + "到" + to + "页")));
+                    i++;
+                }
+                if (pageListPannelData.currentPageRange.from != topRange - 1 || pageListPannelData.currentPageRange.to != topRange) {
+                    pageListPannelData.currentPageRange.from = topRange - 1;
+                    pageListPannelData.currentPageRange.to = topRange;
+                }
+                updatePageIdxStatus();
+                return;
+            }
+            
+            
+            /***    更新页面    ***/
+            var updatePage = function(pageCss){
+                //var tp = mainContentData.totalPage;
+                if (!currentPannelPage) {
+                    return;
+                }
+                var tp = currentPannelPage.totalPage;
+                pageListPannelData.pagePannel.ele.html("");
+                var i = 0;
+                //todo：改为需要附加不需要不附加
+                while (i < tp) {
+                    var li = $("<li></li>");
+                    var dv = $('<div class="page-cnt" ></div>').css({
+                        background: "black",
+                        opacity: "0.8",
+                        height: 50,
+                        width: 100,
+                        textAlign: "center",
+                        padding: "15px 0 0 0"
+                    });
+                    pageListPannelData.pagePannel.ele.append(li.append(dv.attr("page-num", (i + 1)).html("第" + (i + 1) + "页")));
+                    i++;
+                }
+                updatePageIdx();
+                updatePageStatus();
+                return;
+            }
+            
+            /* 设置   */
+            var fillPageListPannlCnt = function(ele, css, beforeDir, afterDir){
+                var pannel = $('<ul style="position:absolute; right:0; top:0"></ul>');
+                //var beforeCorner = $('<li style="position:absolute;"></li>');
+                var cnt = $("<li></li>");
+                //var afterCorner = $('<li style="position:absolute;"></li>');
+                //设置样式
+                pannel.width(css.width);
+                pannel.height(parseInt(css.height) + css.width * 2);
+                cnt.css(css).height(parseInt(css.height) + css.width * 2).css("top", 0);
+                pageListPannelData.pagePannel.ele = $('<ul style="position:absolute; overflow:hidden; top:0; left:0;"></ul>').width(120);
+                pageListPannelData.pageIdxPannel.ele = $('<ul class="page-index"></ul>').width(120);
+                var eleWp = $('<div class="page"></div>').append(pageListPannelData.pagePannel.ele);
+                eleWp.height(parseInt(css.height) + css.width * 2).width(120);
+                var idxPannelWp = $('<div class="page"></div>').append(pageListPannelData.pageIdxPannel.ele);
+                idxPannelWp.height(parseInt(css.height) + css.width * 2).width(130);
+                cnt.append(eleWp).append(idxPannelWp);
+                pannel.append(cnt);
+                ele.append(pannel);
+            }
+            
+            var animateQuene = function(queue, interval, complete){
+                var one = queue.shift();
+                if (!one) {
+                    complete && complete();
+                    return;
+                }
+                setTimeout(function(){
+                    one.note &&
+                    one.note.animate({
+                        top: one.top,
+                        left: one.left,
+                        opacity: 1
+                    }, {
+                        easing: "easeInOutSine",
+                        duration: 300,
+                        complete: function(){
+                            $(this).removeAttr("is-animating");
+                            animateQuene(queue, interval, complete);
+                        }
+                    });
+                }, interval || 200);
+            }
+            
+            
+            
+            var articlePage = function(list, complete){
+                if (!list || list.length < 1) {
+                    return;
+                }
+                if (!currentPannelPage || !pannels.mianInner.ele) {
+                    return;
+                }
+                var cnt = $("<div></div>");
+                var tp = currentPannelPage.totalPage;
+                cnt.width(clientSize.width).height(clientSize.height).css({
+                    position: "relative",
+                    //background: "url(images/" + (tp % 5) + ".jpg)",
+                    "float": "left"
+                });
+                var html = "";
+                var j = 0, k = 0;
+                var radmX = 0, radmY = 0;
+                var pos = generateLsCoordinate();
+                var noteList = [];
+                $.each(list, function(i){
+                    var backgroundPath = parseInt(Math.random() * 10) % 9;
+                    var posRct = pos[j] && pos[j][k];
+                    if (j >= pos.length) {
+                        return;
+                    }
+                    if (posRct) {
+                    }
+                    else {
+                        k = 0;
+                        j++;
+                        posRct = pos[j] && pos[j][k];
+                        if (!posRct) {
+                            return {};
+                        }
+                    }
+                    k++;
+                    radmX = Math.random();
+                    radmY = Math.random();
+                    var left = parseInt(posRct.x + parseInt((radmX * (posRct.width)))) - 60;
+                    var top = parseInt(posRct.y + parseInt((radmY * (posRct.height)))) - 250 / 2;
+                    var dp = $("<div></div>").css({
+                        width: "250",
+                        height: "250",
+                        "position": "absolute",
+                        top: clientSize.height / 2 - 125,
+                        left: clientSize.width / 2 - 125,
+                        opacity: "0"
+                    })
+                    var dpc = $('<div><div style="padding:40px;">【国内团购网站一半已死】26日，F团和高朋宣布合并。实际上，美国团购始祖“Groupon”从进入中国就开始遭遇水土不服。加之此前“拉手”撤回在美上市申请，整个行业可谓寒意深浓。国内主要导航网站——团800数据显示，目前，国内活跃的团购网站为2996家，去年同期是4500</div></div>').css({
+                        background: "url(images/article/" + backgroundPath + ".png)",
+                        width: "250",
+                        height: "250"
+                    });
+                    
+                    var ang = parseInt(Math.random() * 10) % 2 ? -parseInt((Math.random() * 25)) : +parseInt((Math.random() * 15));
+                    
+                    var td = new Rotate(dpc[0]);
+                    td.setAngel(ang);
+                    noteList.push({
+                        note: dp.append(dpc),
+                        top: top,
+                        left: left
+                    });
+                    cnt.append(dp.append(dpc));
+                });
+                
+                currentPannelPage.totalPage = parseInt(currentPannelPage.totalPage) + 1;
+                pannels.mianInner.ele.find("." + pannels.mianInner.modulName).append(cnt);
+                console.log(pannels.mianInner.modulName);
+                
+                animateQuene(noteList, 1, function(){
+                    complete && complete(cnt);
+                });
+                
+            }
+            
+            var photoPage = function(){
+            
+            }
+            
+            var homePage = function(){
+                var cnt = $("<div></div>");
+                var tp = currentPannelPage.totalPage;
+                cnt.width(clientSize.width).height(clientSize.height).css({
+                    position: "relative",
+                    //background: "url(images/" + (tp % 5) + ".jpg)",
+                    "float": "left"
+                });
+                //画一个首页
+                
+                var homeSearchTemp = searchTempData.pannel;
+                
+                cnt.html(homeSearchTemp);
+                pannels.mianInner.ele.find(".head-" + pannels.mianInner.modulName).append(cnt);
+            }
+            
+            
+            var videoPage = function(list, complete){
+                if (!list || list.length < 1) {
+                    return;
+                }
+                if (!currentPannelPage || !pannels.mianInner.ele) {
+                    return;
+                }
+                var cnt = $("<div></div>");
+                var tp = currentPannelPage.totalPage;
+                cnt.width(clientSize.width).height(clientSize.height).css({
+                    position: "relative",
+                    //background: "url(images/" + (tp % 5) + ".jpg)",
+                    "float": "left"
+                });
+                var html = "";
+                var j = 0, k = 0;
+                var radmX = 0, radmY = 0;
+                var pos = generateArcListCorrdinate();
+                var noteList = [];
+                
+                var generateVidoeBox = function(){
+                    var videoList = [{
+                        "videoUrl": "http://player.youku.com/player.php/sid/XMjA0Mjg4Nzk2/v.swf",
+                        "imgPath": "images/video/fenghuangchuanqi.gif",
+                        "descript": "Japanese and Korean girls are very cute but they made plastic surgery for most of them. However, Chinese female are still natural beauties for most. So, please Chinese girls don't make yourselves like ugly European or American girls! Only long black hair and brown or black bride eyes suits you",
+                        "title": "凤凰传奇-荷塘月色"
+                    }, {
+                        "videoUrl": "http://player.youku.com/player.php/sid/XMTQ0MDcwODA4/v.swf",
+                        "imgPath": "images/video/upsidedown.jpg",
+                        "descript": "A-Teens-很经典的一首动感歌曲-Upside Down-欧美音乐MV",
+                        "title": "A-Teens - upside down"
+                    }, {
+                        "videoUrl": "http://player.youku.com/player.php/sid/XMjc1MzM4MDYw/v.swf",
+                        "imgPath": "images/video/jayfantexi.jpg",
+                        "descript": "这部MV给的感动，让我对这个男人折服，并深信他的才华，他骨子里透露出的天赋，这个世界有这么一群人，我们能看得懂你想要表达的！",
+                        "title": "周杰伦-依然范特西"
+                    }, {
+                        "videoUrl": "http://player.youku.com/player.php/sid/XMzkzNjA1MjI0/v.swf",
+                        "imgPath": "images/video/jayqilixiang.jpg",
+                        "descript": ".你已经远远离开，我也会慢慢走开；不用担心的太多，我会一直好好过《安静》。2.离开时的不快乐，你用卡片手写着，有些爱只给到这真的痛了《说好的幸福呢》。3.我想就这样牵着你的手不放开，爱能不能够永远单纯没有悲哀《简单爱》4.《东风破》5.《我不配》",
+                        "title": "周杰伦-七里香"
+                    }, {
+                        "videoUrl": "http://player.youku.com/player.php/sid/XMjc5MjA2ODc2/v.swf",
+                        "imgPath": "images/video/spacebound.jpg",
+                        "descript": "细数EM 09-11年这期间上榜的歌都是哪几首？都是什么风格？他的曲风也开始符合大众口味了。那永恒的终将幻灭，一个时代也可以说是慢慢的完结了。",
+                        "title": "eminem-space bound"
+                    }, {
+                        "videoUrl": "http://player.youku.com/player.php/sid/XMTYzNjA2MjMy/v.swf",
+                        "imgPath": "images/video/niuzaihenmang.jpg",
+                        "descript": "有时哥觉得看回贴挺好春哥信过曾哥也拜过就连小沈阳也啾啾过轻抚二弟笑不语安能使尔蛋不疼在很久以前我一直都认为自己是个纯杯具就在刚才我看这视频的时候我一直在做激烈的思想斗争我是该回帖还是该飘过OK 这并不重要现在最困扰我的是回什么贴的问题 回帖是要分原创和不原创的我是一个做事分明的人 ",
+                        "title": "周杰伦-牛仔很忙"
+                    }];
+                    var dpc = $("<div></div");
+                    var idx = parseInt(Math.random() * 10) % 6;
+                    var theVidoe = videoList[idx] || videoList[0];
+                    var ul = $('<ul class="video-art" video-url="' + theVidoe.videoUrl + '"></ul>');
+                    ul.append('<li class="album-corver"><img style="width:200px;" src="' + theVidoe.imgPath + '" ></li>');
+                    ul.append('<li class="album-title"><div><span style="text-align:center;">' + theVidoe.title + '</span></div></li>');
+                    ul.append('<li class="album-decript" style="height:0"><span style="text-align:center;">' + theVidoe.descript + '</span></li>');
+                    dpc.append(ul);
+                    return dpc;
+                }
+                
+                $.each(list, function(i){
+                    var backgroundPath = parseInt(Math.random() * 10) % 9;
+                    var posRct = pos[j] && pos[j][k];
+                    if (j >= pos.length) {
+                        return;
+                    }
+                    if (posRct) {
+                    }
+                    else {
+                        k = 0;
+                        j++;
+                        posRct = pos[j] && pos[j][k];
+                        if (!posRct) {
+                            return {};
+                        }
+                    }
+                    k++;
+                    var left = parseInt(posRct.x)
+                    var top = parseInt(posRct.y);
+                    var dp = $("<div></div>").css({
+                        width: "200",
+                        height: "200",
+                        "position": "absolute",
+                        top: clientSize.height - 100,
+                        left: clientSize.width / 2 - 100,
+                        opacity: "0"
+                    });
+                    var dpc = generateVidoeBox();
+                    //var ang = parseInt(Math.random() * 10) % 2 ? -parseInt((Math.random() * 25)) : +parseInt((Math.random() * 15));
+                    var td = new Rotate(dpc[0]);
+                    var rt = parseInt(posRct.rotate);
+                    dpc.attr("rotate", rt);
+                    td.setAngel(-rt);
+                    
+                    noteList.push({
+                        note: dp.append(dpc),
+                        top: top,
+                        left: left
+                    });
+                    cnt.append(dp.append(dpc));
+                });
+                
+                currentPannelPage.totalPage = parseInt(currentPannelPage.totalPage) + 1;
+                pannels.mianInner.ele.append(cnt);
+                animateQuene(noteList, 1, function(){
+                    complete && complete(cnt);
+                });
+            }
+            
+            
+            
+            var musicPage = function(){
+            
+            
+            }
+            
+            var generateArcListCorrdinate = function(){
+                //生成弧形列表 从下往上开始 彼此之间不能覆盖
+                var arcList = [];
+                
+                //更新坐标系(就不根据当前的元素取值了，直接根据窗口计算就好了)
+                var moveToX = clientSize.width / 2;
+                var moveToY = clientSize.height;
+                //选定半径(半径要有适当的间隔)
+                var initRadius = clientSize.height - 125;
+                var stepLen = 200 + 50;
+                var vtlLen = 200;
+                var remPart = 2;
+                //根据边长计算角度
+                var tmpLen = 0; //横轴
+                //90/5 18deg
+                
+                //18/180*PI arc
+                
+                //
+                var calculateAngel = function(partNum, orginDeg){
+                    if (typeof partNum === undefined || orginDeg === undefined) {
+                        return;
+                    }
+                    var relDeg = (180 - orginDeg) / 2;
+                    var res = relDeg - partNum * orginDeg;
+                    return isNaN(res) ? 0 : res;
+                }
+                
+                var getHalfCircle = function(stepLen, radius){
+                    if (!stepLen || !radius) {
+                        return;
+                    }
+                    var vtlLen = stepLen, initRadius = radius, tpOne = [];
+                    var ag = 2 * (Math.asin(vtlLen / 2 / initRadius));
+                    var tpag = ag, i = 0;
+                    while (tpag <= Math.PI) {
+                        var h = Math.sin(Math.PI - tpag) * initRadius;
+                        var w = Math.cos(Math.PI - tpag) * initRadius;
+                        tpOne.push({
+                            y: moveToY - parseInt(h.toFixed(2)) - 100,
+                            x: moveToX + parseInt(w.toFixed(2)) - 100,
+                            rotate: calculateAngel(i, (ag) / Math.PI * 180)
+                        });
+                        tpag += ag;
+                        i++;
+                    }
+                    return tpOne;
+                }
+                
+                var lastRadus = 0;
+                for (var i = initRadius; i > remPart * 200; i = i - stepLen) {
+                    arcList.push(getHalfCircle(vtlLen, i));
+                    lastRadus = i;
+                }
+                //生成三个最受欢迎list,并确定坐标
+                var ePartLen = (lastRadus * 2) / 3;
+                var mostLeft = moveToX - (lastRadus - 100);
+                var ftOne = [];
+                for (var i = 0; i < 3; i++) {
+                    ftOne.push({
+                        x: mostLeft + parseInt(i * ePartLen),
+                        y: moveToY - 200,
+                        rotate: 0
+                    });
+                }
+                
+                arcList.push(ftOne);
+                return arcList;
+            }
+            
+            var generateLsCoordinate = function(){
+                var abLs = [];
+                var bkWidth = 250;
+                var bkHeight = 250;
+                var xStart = bkWidth / 2, xEnd = clientSize.width - bkWidth;
+                var yStart = bkHeight / 2, yEnd = clientSize.height - bkHeight / 2;
+                //宽高固定
+                var getH = function(y, xStart, xEnd){
+                    var xst = xStart;
+                    var hl = [];
+                    var radm = 0;
+                    while (xst <= xEnd) {
+                        hl.push({
+                            x: xst,
+                            y: y,
+                            width: bkWidth / 3,
+                            height: bkHeight / 3
+                        });
+                        xst += bkWidth / 3 + bkWidth / 2;
+                    }
+                    return hl;
+                }
+                var getV = function(xStart, xEnd, yStart, yEnd){
+                    var yst = yStart;
+                    var vl = [];
+                    var radm = 0;
+                    while (yst <= yEnd) {
+                        vl.push(getH(yst, xStart, xEnd));
+                        yst += bkWidth / 3 + bkWidth / 2;//parseInt(radm * bkWidth)
+                    }
+                    return vl;
+                }
+                return getV(xStart, xEnd, yStart, yEnd);
+            }
+            
+            var animateToPage = function(pageIdx, complete){
+                if (!pannels.mianInner.ele) {
+                    return;
+                }
+                pannels.mianInner.ele.attr("is-animating", "1");
+                pannels.mianInner.ele.stop(true, true).animate({
+                    top: "-" + pageIdx * clientSize.height
+                }, {
+                    easing: "easeInOutSine",
+                    duration: 1000,
+                    complete: function(){
+                        $(this).removeAttr("is-animating");
+                        complete && complete.apply(this, arguments);
+                    }
+                });
+            }
+            
+            var fillMainContent = function(){
+                pannels.outerMain = $('<ul class="content-list"></ul>').height(clientSize.height).width(clientSize.width * 7);
+                pannels.mianInner = {
+                    ele: "",
+                    modulName: ""
+                };
+                var tmpDv = $('<li class="content-home" style="width:' + clientSize.width + 'px; height:' + clientSize.height + 'px;" nav-idx="0" ></li><li class="content-article" style="width:' + clientSize.width + 'px; height:' + clientSize.height + 'px;" nav-idx="1" ></li><li class="content-video" style="width:' + clientSize.width + 'px; height:' + clientSize.height + 'px;" nav-idx="2" ></li><li class="content-photo" style="width:' + clientSize.width + 'px; height:' + clientSize.height + 'px;" nav-idx="3" ></li><li class="content-music" style="width:' + clientSize.width + 'px; height:' + clientSize.height + 'px;" nav-idx="4" ></li><li class="content-about-me" style="width:' + clientSize.width + 'px; height:' + clientSize.height + 'px;" nav-idx="5" ></li><li class="content-feed" style="width:' + clientSize.width + 'px; height:' + clientSize.height + 'px;" nav-idx="6" ></li>');
+                pannels.outerMain.append(tmpDv);
+                pannels.mainContent.append(pannels.outerMain);
+            }
+            
+            var updatePageStatus = function(tempPage){
+                //var currentPage = mainContentData.currentPage;
+                if (!currentPannelPage) {
+                    return;
+                }
+                var currentPage = currentPannelPage.currentPage;
+                if (typeof tempPage !== "undefined") {
+                    currentPage = currentPannelPage.currentPage = tempPage;
+                }
+                //计算中间位置
+                var panel = pageListPannelData.pagePannel.ele;
+                panel.find("li div").css({
+                    background: "#000000",
+                    opacity: "0.8"
+                });
+                var w = panel.parent().height();
+                var top = pageListPannelData.outer.css.top;
+                //一个格子的高度 60+10 这里应该获取高度而不应该写死
+                var bNum = Math.ceil(w / 70);
+                var centerBk = Math.ceil(bNum / 2);
+                var pos = top - (currentPage - (centerBk - 1)) * 70
+                panel &&
+                panel.stop(true, true).animate({
+                    top: pos
+                }, {
+                    duration: 700,
+                    easing: "easeInOutSine",
+                    complete: function(){
+                        $(this).find("li div").eq(currentPage).css({
+                            background: "gray",
+                            opacity: "0.6"
+                        });
+                    }
+                });
+            }
+            
+            
+            var updatePageIdxStatus = function(tempPage){
+                if (!currentPannelPage) {
+                    return;
+                }
+                var currentPage = currentPannelPage.currentPage + 1;
+                if (typeof tempPage !== "undefined") {
+                    currentPage = tempPage + 2;
+                }
+                //计算中间位置
+                var panel = pageListPannelData.pageIdxPannel.ele;
+                panel.find("li div").css({
+                    background: "#000000",
+                    opacity: "0.8"
+                });
+                var w = panel.parent().height();
+                var top = pageListPannelData.outer.css.top;
+                //一个格子的高度 60+10 
+                var bNum = Math.ceil(w / 49);
+                var curAvg = Math.ceil(currentPage / 10);
+                var centerBk = Math.ceil(bNum / 2);
+                var pos = top - (curAvg - (centerBk - 1)) * 49;
+                panel &&
+                panel.stop(true, true).animate({
+                    top: pos
+                }, {
+                    duration: 700,
+                    easing: "easeInOutSine",
+                    complete: function(){
+                        $(this).find("li div").eq(curAvg - 1).css({
+                            background: "gray",
+                            opacity: "0.6"
+                        });
+                    }
+                });
+            }
+            
+            var turnToThePage = function(){
+                var top = -currentPannelPage.currentPage * clientSize.height;
+            }
+            
+            var turnToNavModule = function(data, callback){
+                var idx = data.ele.attr("nav-idx");
+                pannels.outerMain.stop(true, true).animate({
+                    left: "-" + (clientSize.width * idx)
+                }, {
+                    duration: "700",
+                    easing: "easeInOutSine",
+                    complete: function(){
+                        callback && callback.apply(this, arguments);
+                    }
+                });
+            }
+            
+            
+            var initPannel = function(){
+                pannels.head.css(headData.outer.css).animate({
+                    height: 0
+                }, {
+                    easing: "easeInOutElastic",
+                    duration: 1000,
+                    complete: function(){
+                        $(this).attr("is-hidden", "1");
+                    }
+                });
+                
+                pannels.setting.css(settingPannelData.outer.css).animate({
+                    width: 0
+                }, {
+                    easing: "easeInOutElastic",
+                    duration: 1000,
+                    complete: function(){
+                        $(this).attr("is-hidden", "1");
+                    }
+                });
+                
+                pannels.pageList.css(pageListPannelData.outer.css).animate({
+                    width: 0
+                }, {
+                    easing: "easeInOutElastic",
+                    duration: 1000,
+                    complete: function(){
+                        $(this).attr("is-hidden", "1");
+                    }
+                });
+                
+                pannels.news.css(newsPannelData.outer.css).animate({
+                    height: 0
+                }, {
+                    easing: "easeInOutElastic",
+                    duration: 1000,
+                    complete: function(){
+                        $(this).attr("is-hidden", "1");
+                    }
+                });
+                
+                /****************************       主要内容             ***********************************/
+                pannels.mainContent.css({
+                    top: 0,
+                    left: 0,
+                    width: clientSize.width,
+                    height: clientSize.height,
+                    zIndex: "-1"
+                });
+                
+                /********************       合并整理       ************************/
+                fillPannelCnt(pannels.head, headData.content.css, "top-left", "top-right");
+                fillNewsPannelCnt(pannels.news, newsPannelData.content.css, "bottom-right", "bottom-left");
+                fillSettingPannlCnt(pannels.setting, settingPannelData.content.css, "bottom-left", "top-right");
+                fillPageListPannlCnt(pannels.pageList, pageListPannelData.content.css, "bottom-right", "top-left");
+                fillMainContent();
+                
+                
+                /********************       初始化home页面       ************************/
+                (function(){
+                    var navList = headData.headNav.navList;
+                    var tagFn = navList["home"];
+                    var tagData = tagFn.call(navList);
+                    
+                    if (tagData) {
+                        turnToNavModule(tagData, function(){
+                            //updatePage();
+                        });
+                    }
+                }).call(this);
+                
+                //创建视频播放框弹出框
+                pupupCollection = deskPopup.addPopup({
+                    css: {
+                        width: "500px",
+                        height: "400px",
+                        background: "#ffffff",
+                        color: "gray"
+                    },
+                    popupId: "videoPlay",
+                    content: $("#video").show()
+                });
+                
+                //fillMainContent();
+                //articlePage(new Array(40), function(cnt){
+                
+                //});
+                //updatePage();
+                
+                /********************************         用户设置面板         *****************************************/
+                pannels.setting.find("ul li ul.tools").delegate("li", "click", function(){
+                    var regObj = settingPannelData.settingNav;
+                    var that = $(this);
+                    var methodName = that.attr("class");//todo:有bug	如果都多个样式就麻烦了,后期修改不要跟样式关联新建一个关联属性
+                    var method = regObj[methodName];
+                    if (method) {
+                        $.isFunction(method) && (method.call(regObj, that));
+                    }
+                });
+                
+                
+                /********************************         设置页面转向         *****************************************/
+                //转到相对应的页面
+                pageListPannelData.pagePannel.ele.delegate("li div.page-cnt", "click", function(){
+                    if (!currentPannelPage) {
+                        return;
+                    }
+                    var that = $(this);
+                    currentPannelPage.currentPage = parseInt(that.attr("page-num"), 10) - 1;
+                    updatePageStatus();
+                    animateToPage(currentPannelPage.currentPage);
+                });
+                
+                //转到对应的页面范围
+                pageListPannelData.pageIdxPannel.ele.delegate("li div.page-idx-cnt", "click", function(){
+                    var that = $(this);
+                    var from = parseInt(that.attr("from-page-idx"));
+                    var to = that.attr("to-page-idx");
+                    updatePageIdxStatus(from);
+                    updatePageStatus(from);
+                    //mainContentData.currentPage = parseInt(that.attr("page-num"),10) - 1;
+                    //updatePageStatus();
+                    //animateToPage(mainContentData.currentPage);
+                });
+                
+                /********************************         导航转场         *****************************************/
+                headData.headNav.ele.delegate("ul li", "click", function(){
+                    var that = $(this);
+                    //console.log("1212");
+                    var navList = headData.headNav.navList;
+                    var className = that.prop("class");
+                    var tagFn = navList[className];
+                    var tagData = null;
+                    if (tagFn) {
+                        tagData = tagFn.call(navList);
+                    }
+                    else {
+                        return;
+                    }
+                    if (tagData) {
+                        turnToNavModule(tagData, function(){
+                            updatePage();
+                        });
+                    }
+                });
+                
+                //绑定视频
+                pannels.mainContent.delegate("ul.content-list li.content-video div.video ul.video-art", "click", function(){
+                    var that = $(this);
+                    //todo:可以优化
+                    var startCss = {
+                        left: ($(window).width() - 500) / 2,
+                        top: -400,
+                        display: "block"
+                    }, endCss = {
+                        top: ($(window).height() - 400) / 2,
+                        opacity: "1"
+                    }
+                    var popVideo = deskPopup.getPopup("videoPlay");
+                    var player = popVideo.ele.dvPannel.find("#video-player");
+                    var playCode = '<embed  src="' + that.attr("video-url") + '" quality="high" width="500" height="400" align="middle" allowScriptAccess="sameDomain" allowFullscreen="true" wmode="window"  type="application/x-shockwave-flash"></embed>'
+                    player.html(playCode);
+                    popVideo &&
+                    popVideo.comeOn(startCss, endCss, function(){
+                    });
+                })
+                
+                pannels.mainContent.delegate("ul.content-list li.content-video", "click", function(){
+                    var popVideo = deskPopup.getPopup("videoPlay");
+                    var endCss = {
+                        top: $(window).height(),
+                        opacity: "0"
+                    }
+                    popVideo.getOut(endCss, function(){
+                        this.ele.dvPannel.hide();
+                    });
+                });
+                
+                
+            }
+            
+            var animatePannel = function(ele, css, stop){
+                if (stop) {
+                    if (!ele.attr("is-animating") && !ele.attr("is-hidden")) {
+                        ele.attr("is-animating", "1");
+                        ele.animate(css, {
+                            easing: "easeInOutElastic",
+                            duration: 1000,
+                            complete: function(){
+                                $(this).attr("is-hidden", "1");
+                                $(this).removeAttr("is-animating");
+                            }
+                        });
+                    }
+                }
+                else {
+                    if (!ele.attr("is-animating") && ele.attr("is-hidden")) {
+                        ele.attr("is-animating", "1");
+                        ele.animate(css, {
+                            easing: "easeOutQuart",
+                            duration: 500,
+                            complete: function(){
+                                $(this).removeAttr("is-hidden");
+                                $(this).removeAttr("is-animating");
+                            }
+                        });
+                    }
+                }
+            }
+            
+            var showPannel = function(x, y){
+                //top header
+                if (x > headData.outer.css.left && x < (headData.outer.css.left + headData.outer.css.width) && y > 0 && y < headData.outer.css.height) {
+                    animatePannel(pannels.head, {
+                        height: headData.outer.css.height
+                    }, false);
+                }
+                else {
+                    animatePannel(pannels.head, {
+                        height: 0
+                    }, true);
+                }
+                //left settings
+                if (x > 0 && x < settingPannelData.outer.css.width && y > settingPannelData.outer.css.top && y < (settingPannelData.outer.css.top + settingPannelData.outer.css.height)) {
+                    animatePannel(pannels.setting, {
+                        width: settingPannelData.outer.css.width
+                    }, false);
+                }
+                else {
+                    animatePannel(pannels.setting, {
+                        width: 0
+                    }, true);
+                }
+                //bottom news
+                if (x > newsPannelData.outer.css.left && x < (newsPannelData.outer.css.left + newsPannelData.outer.css.width) && y > clientSize.height - newsPannelData.outer.css.height && y < clientSize.height) {
+                    animatePannel(pannels.news, {
+                        height: newsPannelData.outer.css.height
+                    }, false);
+                }
+                else {
+                    animatePannel(pannels.news, {
+                        height: 0
+                    }, true);
+                }
+                //right pages
+                if (x > clientSize.width - pageListPannelData.outer.css.width && x < clientSize.width && y > pageListPannelData.outer.css.top && y < (pageListPannelData.outer.css.top + pageListPannelData.outer.css.height)) {
+                    animatePannel(pannels.pageList, {
+                        width: pageListPannelData.outer.css.width
+                    }, false);
+                }
+                else {
+                    animatePannel(pannels.pageList, {
+                        width: 0
+                    }, true);
+                }
+            }
+            
+            /********************************************                    事件绑定                         **********************************************/
+            $(document).mousemove(function(e){
+                var top = e.clientY;
+                var left = e.clientX;
+                showPannel(left, top);
+            });
+            
+            $(document).bind("DOMMouseScroll", function(event, dalt){
+                if (event.detail) {
+                    delta = -event.detail / 3;
+                }
+                
+                if (!pannels.mianInner.ele || pannels.mianInner.ele.attr("is-animating")) {
+                    return;
+                }
+                if (!currentPannelPage) {
+                    return;
+                }
+                if (delta < 0) {
+                    //next page                    
+                    if (currentPannelPage.currentPage >= currentPannelPage.totalPage - 1) {
+                        articlePage(new Array(30));
+                    }
+                    currentPannelPage.currentPage++;
+                    animateToPage(currentPannelPage.currentPage, function(){
+                    });
+                    updatePage();
+                }
+                else {
+                    // prev page					
+                    if (currentPannelPage.currentPage > 0) {
+                        currentPannelPage.currentPage--;
+                        animateToPage(currentPannelPage.currentPage);
+                        updatePage();
+                    }
+                }
+                
+            }).bind("mousewheel", function(event){
+                var delta = 0;
+                if (event.wheelDelta) {
+                    delta = event.wheelDelta / 120;
+                }
+                if (!pannels.mianInner.ele || pannels.mianInner.ele.attr("is-animating")) {
+                    return;
+                }
+                if (!currentPannelPage) {
+                    return;
+                }
+                if (delta < 0) {
+                    //next page                    
+                    if (currentPannelPage.currentPage >= currentPannelPage.totalPage - 1) {
+                        articlePage(new Array(30));
+                    }
+                    currentPannelPage.currentPage++;
+                    animateToPage(currentPannelPage.currentPage, function(){
+                    });
+                }
+                else {
+                    // prev page					
+                    if (currentPannelPage.currentPage > 0) {
+                        currentPannelPage.currentPage--;
+                        animateToPage(currentPannelPage.currentPage);
+                    }
+                }
+                updatePage();
+            });
+            initPannel();
+            //console.log("widht : " + document.documentElement.clientWidth);
+            //console.log("height : " + document.documentElement.clientHeight);
+            //console.log(clientSize.width + " : " + clientSize.height);
+        });
+    </script>
+</html>
